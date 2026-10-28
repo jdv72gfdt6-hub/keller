@@ -55,6 +55,6 @@
   "freie_positionen": [
     { "id": "koffer", "name": "Koffer", "ort": "oben auf PAX vorne und hinten", "inhalt": ["Koffer rosa", "Koffer schwarz"] },
     { "id": "leiter", "name": "Leiter", "ort": "Boden an der Rückwand", "x": 360, "y": 40 },
-    { "id": "reifen", "name": "Reifenstapel (4 Räder)", "ort": "Boden rechts vor dem PAX", "x": 100, "y": 140, "durchmesser": 63, "hoehe": 85, "position_geschaetzt": true }
+    { "id": "reifen", "name": "Reifenstapel (4 Räder)", "ort": "Boden rechts vor dem PAX", "x": 137.5, "y": 142.5, "durchmesser": 63, "hoehe": 85, "position_geschaetzt": true }
   ]
 }
