@@ -1,0 +1,60 @@
+{
+  "raum": { "name": "Keller", "laenge": 380, "breite": 174, "hoehe": 267, "tuer": "kurze Wand bei x = 0" },
+  "moebel": [
+    {
+      "id": "kallax-3x4", "name": "Kallax 3×4", "typ": "kallax", "wand": "links",
+      "x": 0, "breite": 112, "tiefe": 39, "hoehe": 147, "spalten": 3, "reihen": 4,
+      "fach_innenmass": 33,
+      "belegung_oben_nach_unten": [
+        ["offen", "schubladeneinsatz-3", "box-grau"],
+        ["offen", "box-grau", "box-grau"],
+        ["box-grau", "box-grau", "offen"],
+        ["box-grau", "box-grau", "box-grau"]
+      ]
+    },
+    {
+      "id": "kallax-2x4", "name": "Kallax 2×4", "typ": "kallax", "wand": "links",
+      "x": 112, "breite": 77, "tiefe": 39, "hoehe": 147, "spalten": 2, "reihen": 4,
+      "fach_innenmass": 33,
+      "belegung_oben_nach_unten": [
+        ["offen", "offen"],
+        ["box-weiss", "box-weiss"],
+        ["box-schwarz", "box-weiss"],
+        ["box-schwarz", "box-schwarz"]
+      ]
+    },
+    {
+      "id": "pax-vorne", "name": "PAX vorne", "typ": "pax", "wand": "rechts",
+      "x": 169, "breite": 75, "tiefe": 58, "hoehe": 201,
+      "einteilung_von_unten": [
+        { "typ": "schublade", "anzahl": 3, "art": "weiß, geschlossen" },
+        { "typ": "boden" },
+        { "typ": "kleiderstange" }
+      ]
+    },
+    {
+      "id": "pax-hinten", "name": "PAX hinten", "typ": "pax", "wand": "rechts",
+      "x": 244, "breite": 75, "tiefe": 58, "hoehe": 201,
+      "einteilung_von_unten": [
+        { "typ": "drahtkorb", "anzahl": 3 },
+        { "typ": "boden" },
+        { "typ": "kleiderstange" }
+      ]
+    },
+    {
+      "id": "schrank-dunkel", "name": "Dunkler Schrank", "typ": "schrank", "wand": "rechts",
+      "x": 319, "breite": 61, "tiefe": 40, "tiefe_geschaetzt": true, "hoehe": 191,
+      "tueren": { "art": "drehtuer", "anzahl": 3, "anordnung": "übereinander", "faecher_je_tuer_von_unten": [2, 2, 1] },
+      "faecher": 5, "optik": "dunkelgrau, Betonoptik"
+    }
+  ],
+  "schiebetueren": {
+    "id": "pax-schiebetueren", "ueber": ["pax-vorne", "pax-hinten"],
+    "anzahl": 2, "breite_je": 75, "schiene": "gemeinsam"
+  },
+  "freie_positionen": [
+    { "id": "koffer", "name": "Koffer", "ort": "oben auf PAX vorne und hinten", "inhalt": ["Koffer rosa", "Koffer schwarz"] },
+    { "id": "leiter", "name": "Leiter", "ort": "Boden an der Rückwand", "x": 360, "y": 40 },
+    { "id": "reifen", "name": "Reifenstapel (4 Räder)", "ort": "Boden rechts vor dem PAX", "x": 100, "y": 140, "durchmesser": 63, "hoehe": 85, "position_geschaetzt": true }
+  ]
+}
