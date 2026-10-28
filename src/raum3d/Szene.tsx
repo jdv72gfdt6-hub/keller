@@ -56,6 +56,7 @@ const LINIE = {
   gitter: new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.06 }),
   auswahl: new THREE.LineBasicMaterial({ color: AUSWAHL }),
   treffer: new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 1 }),
+  flaeche: new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.3 }),
 };
 
 const GLOW = {
@@ -72,7 +73,7 @@ function farbMat(farbe: string): THREE.MeshStandardMaterial {
 
 // ---------- Hilfen ----------
 
-/** Klick nur auslÃ¶sen, wenn nicht gedreht/verschoben wurde. */
+/** Klick nur auslösen, wenn nicht gedreht/verschoben wurde. */
 function tippen(fn: () => void) {
   return (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
@@ -123,9 +124,11 @@ export interface SzenenZustand {
   schiebeOffen: string | null;
   tueren: Set<string>;
   hervor: Set<string>;
-  /** Orts-IDs mit Inhalt (fÃ¼r dezentes Leuchten offener FÃ¤cher) */
+  /** Orts-IDs mit Inhalt (für dezentes Leuchten offener Fächer) */
   mitInhalt: Set<string>;
-  /** GegenstÃ¤nde je freier Position (Koffer werden einzeln gezeichnet) */
+  /** Offene Fächer, Böden und Stangen mit dezentem Umriss als antippbar kennzeichnen (Einzelmöbel-Ansicht) */
+  flaechenZeigen?: boolean;
+  /** Gegenstände je freier Position (Koffer werden einzeln gezeichnet) */
   freiInhalt: Map<string, Gegenstand[]>;
 }
 
@@ -159,13 +162,22 @@ interface Props {
   beschriftungsEbene: RefObject<HTMLDivElement | null>;
 }
 
+/** Gemeinsame Beleuchtung für Raum- und Einzelmöbel-Ansicht */
+export function Licht() {
+  return (
+    <>
+      <hemisphereLight args={['#cfeeff', '#1a1222', 1.1]} />
+      <directionalLight position={[2.5, 4, 1.5]} intensity={1.3} />
+      <directionalLight position={[-1, 2, 3]} intensity={0.35} color="#9fd8ff" />
+    </>
+  );
+}
+
 export function Szene({ r, z, a, start, kamera, beschriftungen, beschriftungsEbene }: Props) {
   return (
     <>
       <color attach="background" args={['#05080e']} />
-      <hemisphereLight args={['#cfeeff', '#1a1222', 1.1]} />
-      <directionalLight position={[2.5, 4, 1.5]} intensity={1.3} />
-      <directionalLight position={[-1, 2, 3]} intensity={0.35} color="#9fd8ff" />
+      <Licht />
       <OrbitControls
         makeDefault
         target={start.ziel}
@@ -209,7 +221,7 @@ function Blickfeld() {
 const tmpPos = new THREE.Vector3();
 const tmpZiel = new THREE.Vector3();
 
-/** FÃ¤hrt die Kamera weich zu einem Ziel; bricht ab, sobald der Nutzer selbst dreht. */
+/** Fährt die Kamera weich zu einem Ziel; bricht ab, sobald der Nutzer selbst dreht. */
 function KameraFuehrung({ auftrag }: { auftrag: KameraAuftrag | null }) {
   const camera = useThree((s) => s.camera);
   const controls = useThree((s) => s.controls) as OrbitControlsImpl | null;
@@ -244,7 +256,7 @@ function KameraFuehrung({ auftrag }: { auftrag: KameraAuftrag | null }) {
   return null;
 }
 
-/** LÃ¤sst die Rahmen von Suchtreffern pulsieren (nur solange es Treffer gibt). */
+/** Lässt die Rahmen von Suchtreffern pulsieren (nur solange es Treffer gibt). */
 function Pulsieren({ aktiv }: { aktiv: boolean }) {
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => invalidate(), [aktiv, invalidate]);
@@ -261,7 +273,7 @@ function Pulsieren({ aktiv }: { aktiv: boolean }) {
 const tmpProj = new THREE.Vector3();
 
 /**
- * Positioniert die Beschriftungen (normale DOM-Elemente Ã¼ber dem Canvas) bei jedem gerenderten Frame.
+ * Positioniert die Beschriftungen (normale DOM-Elemente über dem Canvas) bei jedem gerenderten Frame.
  * Bewusst ohne drei/<Html>: dessen eigene DOM-Wurzeln kollidieren beim Verlassen der Ansicht mit React.
  */
 function Beschriftungen({ liste, ebene }: { liste: Beschriftung[]; ebene: RefObject<HTMLDivElement | null> }) {
@@ -307,7 +319,7 @@ function RaumHuelle({ r }: { r: Raum3D }) {
         <planeGeometry />
       </mesh>
       <lineSegments geometry={gitter} material={LINIE.gitter} />
-      {/* WÃ¤nde: kaum sichtbar, damit man von auÃŸen hineinschauen kann */}
+      {/* Wände: kaum sichtbar, damit man von außen hineinschauen kann */}
       <mesh position={[L / 2, H / 2, 0]} scale={[L, H, 1]} material={MAT.wand} raycast={() => null}>
         <planeGeometry />
       </mesh>
@@ -318,15 +330,15 @@ function RaumHuelle({ r }: { r: Raum3D }) {
         <planeGeometry />
       </mesh>
       <Rahmen q={quader(0, 0, 0, L, H, B)} linie={LINIE.raum} />
-      {/* TÃ¼r in der kurzen Wand bei x = 0 */}
+      {/* Tür in der kurzen Wand bei x = 0 */}
       <Rahmen q={quader(-1, 0, B / 2 - 40, 1, 200, B / 2 + 40)} linie={LINIE.tuer} />
     </group>
   );
 }
 
-// ---------- MÃ¶bel ----------
+// ---------- Möbel ----------
 
-function MoebelAnsicht({ m3d, z, a }: { m3d: Moebel3D; z: SzenenZustand; a: SzenenAktionen }) {
+export function MoebelAnsicht({ m3d, z, a }: { m3d: Moebel3D; z: SzenenZustand; a: SzenenAktionen }) {
   const { breite: B, hoehe: H, tiefe: T } = m3d.m;
   const korpus = farbMat(m3d.farbe);
   const gewaehlt = z.auswahl === m3d.m.id;
@@ -348,6 +360,7 @@ function MoebelAnsicht({ m3d, z, a }: { m3d: Moebel3D; z: SzenenZustand; a: Szen
           gewaehlt={z.auswahl === e.ortId}
           hervor={z.hervor.has(e.ortId)}
           hatInhalt={z.mitInhalt.has(e.ortId)}
+          umriss={!!z.flaechenZeigen}
           onTap={() => a.waehle(e.ortId)}
         />
       ))}
@@ -373,11 +386,13 @@ interface ElementProps {
   gewaehlt: boolean;
   hervor: boolean;
   hatInhalt: boolean;
+  /** Umriss für unsichtbare Tippflächen (offenes Fach, Boden, Stange) */
+  umriss: boolean;
   onTap: () => void;
 }
 
-/** Box, Schublade, Korb, Boden, Kleiderstange oder offenes Fach â€“ mit Auszug-Animation. */
-function ElementAnsicht({ e, korpus, raus, gewaehlt, hervor, hatInhalt, onTap }: ElementProps) {
+/** Box, Schublade, Korb, Boden, Kleiderstange oder offenes Fach – mit Auszug-Animation. */
+function ElementAnsicht({ e, korpus, raus, gewaehlt, hervor, hatInhalt, umriss, onTap }: ElementProps) {
   const ref = useRef<THREE.Group>(null);
   useGlatt(raus ? e.auszug : 0, (v) => ref.current && (ref.current.position.z = v));
   const q = e.q;
@@ -436,12 +451,14 @@ function ElementAnsicht({ e, korpus, raus, gewaehlt, hervor, hatInhalt, onTap }:
       break;
   }
 
-  // Offene FÃ¤cher, BÃ¶den und Stangen mit Inhalt leuchten dezent am Boden
-  const glimmen = hatInhalt && (e.art === 'fach' || e.art === 'boden' || e.art === 'stange');
+  // Offene Fächer, Böden und Stangen mit Inhalt leuchten dezent am Boden
+  const flaeche = e.art === 'fach' || e.art === 'boden' || e.art === 'stange';
+  const glimmen = hatInhalt && flaeche;
 
   return (
     <group ref={ref}>
       {koerper}
+      {umriss && flaeche && !gewaehlt && !hervor && <Rahmen q={q} linie={LINIE.flaeche} rand={-1.5} />}
       {glimmen && <Kasten q={quader(q.min[0] + 1, q.min[1] + 0.1, q.min[2] + 1, q.max[0] - 1, q.min[1] + Math.min(4, h), q.max[2] - 1)} mat={MAT.inhalt} />}
       {gewaehlt && <Rahmen q={q} linie={LINIE.auswahl} glow={GLOW.auswahl} rand={1.5} />}
       {hervor && !gewaehlt && <Rahmen q={q} linie={LINIE.treffer} glow={GLOW.treffer} rand={1.5} />}
@@ -449,7 +466,7 @@ function ElementAnsicht({ e, korpus, raus, gewaehlt, hervor, hatInhalt, onTap }:
   );
 }
 
-/** DrehtÃ¼r mit Scharnier links; klappt nach vorne auf. */
+/** Drehtür mit Scharnier links; klappt nach vorne auf. */
 function Drehtuer(p: { t: Drehtuer3D; mat: THREE.Material; offen: boolean; gewaehlt: boolean; hervor: boolean; onTap: () => void }) {
   const ref = useRef<THREE.Group>(null);
   useGlatt(p.offen ? -1.75 : 0, (v) => ref.current && (ref.current.rotation.y = v));
@@ -465,7 +482,7 @@ function Drehtuer(p: { t: Drehtuer3D; mat: THREE.Material; offen: boolean; gewae
   );
 }
 
-// ---------- SchiebetÃ¼ren (gemeinsame Schiene) ----------
+// ---------- Schiebetüren (gemeinsame Schiene) ----------
 
 function SchiebeTueren({ s, offen, a }: { s: Schiebe3D; offen: string | null; a: SzenenAktionen }) {
   return (
@@ -479,7 +496,7 @@ function SchiebeTueren({ s, offen, a }: { s: Schiebe3D; offen: string | null; a:
 
 function SchiebeTuer({ s, i, offen, a }: { s: Schiebe3D; i: number; offen: string | null; a: SzenenAktionen }) {
   const ref = useRef<THREE.Group>(null);
-  // Abwechselnd Ã¤uÃŸere/innere Spur, damit die TÃ¼ren aneinander vorbeifahren
+  // Abwechselnd äußere/innere Spur, damit die Türen aneinander vorbeifahren
   const spur = i % 2 === 0 ? 1 : 0;
   const slot = schiebeSlot(s, i, offen);
   const heim = useMemo(() => s.slot(i, spur), [s, i, spur]);
@@ -546,7 +563,7 @@ function FreiAnsicht({ f, z, a }: { f: Frei3D; z: SzenenZustand; a: SzenenAktion
     const h = f.fp.hoehe ?? 180;
     const sprossen = Math.floor(h / 28);
     koerper = (
-      // leicht an die RÃ¼ckwand gelehnt
+      // leicht an die Rückwand gelehnt
       <group position={[bx, 0, bz]} rotation-z={-0.12}>
         <Kasten q={quader(-1.5, 0, -23, 1.5, h, -20)} mat={MAT.metall} onTap={tap} />
         <Kasten q={quader(-1.5, 0, 20, 1.5, h, 23)} mat={MAT.metall} onTap={tap} />
