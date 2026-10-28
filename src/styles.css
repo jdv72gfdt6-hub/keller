@@ -1059,6 +1059,64 @@ input[type='checkbox'] {
   }
 }
 
+/* ---------- Möbelseite: Einzelmöbel in 3D ---------- */
+
+.moebel3d {
+  height: min(52vh, 520px);
+  margin: 0.4rem -16px 0;
+  background: #070b12;
+  border-top: 1px solid var(--rand);
+  border-bottom: 1px solid var(--rand);
+}
+.moebel3d canvas {
+  touch-action: none;
+}
+.moebel3d-laden {
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+}
+.auswahl {
+  margin-top: 0.8rem;
+}
+.auswahl-kopf {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 0.6rem;
+}
+.auswahl-kopf h2 {
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+}
+.auswahl-kopf p {
+  margin: 2px 0 0;
+}
+.auswahl-hinweis {
+  margin: 0.8rem 0;
+}
+.als-liste {
+  margin-top: 1rem;
+  border: 1px solid var(--rand);
+  border-radius: var(--radius);
+  background: var(--flaeche);
+}
+.als-liste summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 1rem;
+  color: var(--text-2);
+  cursor: pointer;
+  list-style: none;
+}
+.als-liste .karten {
+  padding: 0 0.6rem 0.6rem;
+}
+
 /* ---------- Umschalter Liste / 3D ---------- */
 
 .umschalter {
