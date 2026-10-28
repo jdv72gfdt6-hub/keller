@@ -521,21 +521,26 @@ function FreiAnsicht({ f, z, a }: { f: Frei3D; z: SzenenZustand; a: SzenenAktion
   let koerper: ReactNode;
 
   if (f.art === 'koffer') {
-    const items = (z.freiInhalt.get(f.fp.id) ?? []).slice(0, 4);
+    const items = (z.freiInhalt.get(f.fp.id) ?? []).slice(0, 6);
     const n = Math.max(1, items.length);
+    const plaetze = f.plaetze ?? [];
     koerper = (
-      <group position={[bx, by, bz]} rotation-y={f.rotY}>
+      <>
         {(items.length ? items : [null]).map((g, i) => {
-          const x = (i - (n - 1) / 2) * 72;
+          // Je ein Koffer mittig auf einem Möbel; gibt es mehr Koffer als Möbel, wird gestapelt.
+          // Ohne Möbelplätze: nebeneinander um den Bezugspunkt.
+          const platz = plaetze[i % plaetze.length];
+          const pos: Vec3 = platz ? [platz[0], platz[1] + Math.floor(i / plaetze.length) * 23, platz[2]] : [bx, by, bz];
+          const x = plaetze.length ? 0 : (i - (n - 1) / 2) * 72;
           const farbe = g ? kofferFarbe(g.name) : '#4b5568';
           return (
-            <group key={g?.id ?? i}>
+            <group key={g?.id ?? i} position={pos} rotation-y={f.rotY}>
               <Kasten q={quader(x - 34, 0.5, -22, x + 34, 23, 22)} mat={farbMat(farbe)} onTap={tap} kanten="#ffffff30" />
               <Kasten q={quader(x - 8, 23, -2, x + 8, 25, 2)} mat={MAT.griff} />
             </group>
           );
         })}
-      </group>
+      </>
     );
   } else if (f.art === 'leiter') {
     const h = f.fp.hoehe ?? 180;
