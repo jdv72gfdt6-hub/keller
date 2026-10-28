@@ -1,6 +1,6 @@
 // Detailseite eines Ortes (Möbel, Fach, Schublade, Box …): Unterorte, Inhalt, Schnellerfassung.
 // Hierher führen auch die QR-Codes.
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useKeller } from '../state/KellerContext';
 import { pfad, TYP_LABEL, RAUM_ID } from '../config/orte';
 import { links, zurueck } from '../router';
@@ -11,6 +11,7 @@ import { QrCode } from '../components/QrCode';
 import { zuletztGenutztMerken } from '../components/OrtWahl';
 import { ortUrl, qrBasisLaden } from '../lib/qrBasis';
 import { neueId } from '../lib/text';
+import { MoebelBereich } from './MoebelBereich';
 
 export function OrtSeite({ id, query }: { id: string; query: URLSearchParams }) {
   const { orte, proOrt, zaehlung, config, configSpeichern, verschieben, zeigeToast } = useKeller();
@@ -135,31 +136,35 @@ export function OrtSeite({ id, query }: { id: string; query: URLSearchParams }) 
         )}
       </div>
 
+      {ort.typ === 'moebel' && <MoebelBereich moebelId={id} startWahl={query.get('wahl')} />}
+
       {ort.kinder.length > 0 && (
-        <ul className="karten">
-          {ort.kinder.map((kid) => {
-            const k = orte.get(kid)!;
-            const z = zaehlung(kid);
-            return (
-              <li key={kid}>
-                <a className="karte" href={links.ort(kid)}>
-                  <span className="karte-titel">
-                    {k.farbe && <span className="farbpunkt" style={{ background: k.farbe }} />}
-                    {k.name}
-                  </span>
-                  <span className="karte-info">
-                    {TYP_LABEL[k.typ]}
-                    {k.kinder.length > 0 && k.typ === 'fach' && ` · ${orte.get(k.kinder[0])!.name}`}
-                  </span>
-                  <span className="karte-zahl">
-                    {z.gesamt > 0 ? `${z.gesamt} Ggst.` : 'leer'}
-                    {z.entnommen > 0 && <span className="tag tag-orange">{z.entnommen} raus</span>}
-                  </span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
+        <AlsListe ausklappbar={ort.typ === 'moebel'}>
+          <ul className="karten">
+            {ort.kinder.map((kid) => {
+              const k = orte.get(kid)!;
+              const z = zaehlung(kid);
+              return (
+                <li key={kid}>
+                  <a className="karte" href={links.ort(kid)}>
+                    <span className="karte-titel">
+                      {k.farbe && <span className="farbpunkt" style={{ background: k.farbe }} />}
+                      {k.name}
+                    </span>
+                    <span className="karte-info">
+                      {TYP_LABEL[k.typ]}
+                      {k.kinder.length > 0 && k.typ === 'fach' && ` · ${orte.get(k.kinder[0])!.name}`}
+                    </span>
+                    <span className="karte-zahl">
+                      {z.gesamt > 0 ? `${z.gesamt} Ggst.` : 'leer'}
+                      {z.entnommen > 0 && <span className="tag tag-orange">{z.entnommen} raus</span>}
+                    </span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </AlsListe>
       )}
 
       {(ort.ablage || items.length > 0) && (
@@ -183,6 +188,19 @@ export function OrtSeite({ id, query }: { id: string; query: URLSearchParams }) 
 
       {qrOffen && <QrDialog ortId={id} name={ort.name} onClose={() => setQrOffen(false)} />}
     </div>
+  );
+}
+
+/** Bei Möbeln ist die Fächerliste nur noch Ausweichmöglichkeit unter dem 3D-Modell. */
+function AlsListe({ ausklappbar, children }: { ausklappbar: boolean; children: ReactNode }) {
+  if (!ausklappbar) return <>{children}</>;
+  return (
+    <details className="als-liste">
+      <summary>
+        <Icon name="liste" size={18} /> Als Liste anzeigen
+      </summary>
+      {children}
+    </details>
   );
 }
 
