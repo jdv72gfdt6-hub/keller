@@ -81,6 +81,8 @@ export interface Frei3D {
   /** Hüllquader in Weltkoordinaten (für Rahmen und Kamera) */
   q: Quader;
   rotY: number;
+  /** Ablageplätze oben auf Möbeln (Mitte der Oberseite, Welt) – z. B. je ein Koffer pro Schrank */
+  plaetze?: Vec3[];
 }
 
 export interface Raum3D {
@@ -324,8 +326,15 @@ function freiLayout(fp: FreiePosition, moebel: Moebel3D[]): Frei3D | null {
     return { fp, art, basis: [x, 0, z], q: quader(x - 15, 0, z - 15, x + 15, h, z + 15), rotY: 0 };
   }
   // Ohne Koordinaten: Möbel suchen, deren Name in der Ortsbeschreibung steht ("oben auf PAX vorne und hinten").
-  const text = normalisieren(fp.ort ?? '');
-  const auf = moebel.filter((m3d) => text.includes(normalisieren(m3d.m.name)));
+  // Ein Möbel passt, wenn alle Wörter seines Namens vorkommen – so findet
+  // "oben auf PAX vorne und hinten" sowohl "PAX vorne" als auch "PAX hinten".
+  const woerter = new Set(normalisieren(fp.ort ?? '').split(/[^a-z0-9]+/).filter(Boolean));
+  const auf = moebel.filter((m3d) =>
+    normalisieren(m3d.m.name)
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean)
+      .every((w) => woerter.has(w)),
+  );
   if (!auf.length) return null;
   const punkte = auf.flatMap((m3d) =>
     [
@@ -339,7 +348,8 @@ function freiLayout(fp: FreiePosition, moebel: Moebel3D[]): Frei3D | null {
   const zs = punkte.map((p) => p[2]);
   const oben = Math.max(...auf.map((m3d) => m3d.m.hoehe));
   const q = quader(Math.min(...xs), oben, Math.min(...zs), Math.max(...xs), oben + 30, Math.max(...zs));
-  return { fp, art, basis: [(q.min[0] + q.max[0]) / 2, oben, (q.min[2] + q.max[2]) / 2], q, rotY: auf[0].lage.rotY };
+  const plaetze = auf.map((m3d) => lokalZuWelt(m3d.lage, [m3d.m.breite / 2, m3d.m.hoehe, m3d.m.tiefe / 2]));
+  return { fp, art, basis: [(q.min[0] + q.max[0]) / 2, oben, (q.min[2] + q.max[2]) / 2], q, rotY: auf[0].lage.rotY, plaetze };
 }
 
 // ---------- Gesamter Raum ----------
