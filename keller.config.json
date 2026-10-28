@@ -44,8 +44,8 @@
     {
       "id": "schrank-dunkel", "name": "Dunkler Schrank", "typ": "schrank", "wand": "rechts",
       "x": 319, "breite": 61, "tiefe": 40, "tiefe_geschaetzt": true, "hoehe": 191,
-      "tueren": { "art": "drehtuer", "anzahl": 3, "anordnung": "übereinander", "faecher_je_tuer_von_unten": [2, 2, 1] },
-      "faecher": 5, "optik": "dunkelgrau, Betonoptik"
+      "tueren": { "art": "drehtuer", "anzahl": 3, "anordnung": "übereinander", "faecher_je_tuer_von_unten": [2, 2, 2] },
+      "faecher": 6, "optik": "dunkelgrau, Betonoptik"
     }
   ],
   "schiebetueren": {
