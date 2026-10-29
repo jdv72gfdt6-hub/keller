@@ -40,6 +40,9 @@ export const links = {
   ort: (id: string, extra = '') => `#/ort/${id}${extra}`,
   gegenstand: (id: string) => `#/g/${id}`,
   suche: (q = '') => `#/suche${q ? `?q=${encodeURIComponent(q)}` : ''}`,
+  /** Alle Gegenstände (Suchseite ohne Suchbegriff, ohne Tastatur) */
+  alle: '#/suche?alle=1',
+  frei: '#/frei',
   entnommen: '#/entnommen',
   scan: '#/scan',
   etiketten: '#/etiketten',
