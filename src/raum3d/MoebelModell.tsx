@@ -7,7 +7,7 @@ import { OrbitControls } from '@react-three/drei';
 import type * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import type { Moebel3D, Vec3 } from './layout';
-import { Licht, MoebelAnsicht, type SzenenAktionen, type SzenenZustand } from './Szene';
+import { MoebelAnsicht, Umgebung, type SzenenAktionen, type SzenenZustand } from './Szene';
 
 const FOV = 35;
 
@@ -34,8 +34,7 @@ export default function MoebelModell({ m3d, z, a, onLeer }: Props) {
         gl={{ antialias: true, powerPreference: 'high-performance' }}
         onPointerMissed={onLeer}
       >
-        <color attach="background" args={['#070b12']} />
-        <Licht />
+        <Umgebung art="moebel" />
         {/* Nur leicht drehbar, damit die Front immer gut antippbar bleibt */}
         <OrbitControls
           makeDefault
