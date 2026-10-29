@@ -1,4 +1,4 @@
-// Details eines Gegenstands: bearbeiten, Foto, Ort ändern, Status, löschen.
+// Details eines Gegenstands als Glas-Sheet: bearbeiten, Foto, Ort ändern, Status, löschen.
 import { useEffect, useRef, useState } from 'react';
 import { useKeller } from '../state/KellerContext';
 import { pfadText } from '../config/orte';
@@ -7,6 +7,7 @@ import { links, zurueck } from '../router';
 import { datumZeit, neueId } from '../lib/text';
 import { fotoVerkleinern } from '../lib/dateien';
 import { Icon } from '../components/Icon';
+import { Sheet } from '../components/Ios';
 import { OrtWahl } from '../components/OrtWahl';
 
 export function GegenstandSeite({ id }: { id: string }) {
@@ -16,6 +17,7 @@ export function GegenstandSeite({ id }: { id: string }) {
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [ortWahl, setOrtWahl] = useState(false);
   const fotoInput = useRef<HTMLInputElement>(null);
+  const schliessen = () => zurueck(g ? links.ort(g.ortId) : links.start);
 
   // Formular nur beim Wechsel des Gegenstands befüllen, nicht bei jeder Statusänderung.
   useEffect(() => {
@@ -36,12 +38,9 @@ export function GegenstandSeite({ id }: { id: string }) {
 
   if (!g) {
     return (
-      <div className="seite">
+      <Sheet titel="Gegenstand" onClose={schliessen}>
         <p className="leer">Gegenstand nicht gefunden (vielleicht gelöscht).</p>
-        <a className="btn" href={links.start}>
-          Zur Übersicht
-        </a>
-      </div>
+      </Sheet>
     );
   }
 
@@ -84,78 +83,115 @@ export function GegenstandSeite({ id }: { id: string }) {
   const entnommen = g.status === 'entnommen';
 
   return (
-    <div className="seite">
-      <nav className="krume">
-        <button className="icon-btn" onClick={() => zurueck(links.ort(g.ortId))} aria-label="Zurück">
-          <Icon name="zurueck" />
-        </button>
-        <a href={links.ort(g.ortId, `?g=${g.id}`)}>{pfadText(orte, g.ortId)}</a>
-      </nav>
-
+    <Sheet
+      titel={g.name}
+      gross
+      onClose={schliessen}
+      rechts={
+        geaendert && (
+          <button className="glas-knopf rund blau" onClick={speichern} aria-label="Speichern">
+            <Icon name="check" size={20} />
+          </button>
+        )
+      }
+    >
       <button
         className={`status-gross ${entnommen ? 'ist-entnommen' : ''}`}
         onClick={() => statusSetzen(g.id, entnommen ? 'vorhanden' : 'entnommen')}
       >
         <span className="status-gross-label">{entnommen ? 'Entnommen' : 'Vorhanden'}</span>
         <span className="status-gross-aktion">
-          <Icon name={entnommen ? 'download' : 'upload'} /> {entnommen ? 'Zurücklegen' : 'Entnehmen'}
+          <Icon name={entnommen ? 'rein' : 'raus'} size={20} /> {entnommen ? 'Zurücklegen' : 'Entnehmen'}
         </span>
       </button>
 
-      <div className="formular">
-        <label>
-          Name
+      <div className="gruppe formular">
+        <label className="feld">
+          <span>Name</span>
           <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         </label>
-        <div className="formular-reihe">
-          <label className="schmal">
-            Menge
-            <input
-              type="number"
-              inputMode="numeric"
-              min={1}
-              value={form.menge}
-              onChange={(e) => setForm({ ...form, menge: e.target.value })}
-            />
-          </label>
-          <label>
-            Kategorie
-            <input list="kat-detail" value={form.kategorie} onChange={(e) => setForm({ ...form, kategorie: e.target.value })} />
-            <datalist id="kat-detail">
-              {kategorien.map((k) => (
-                <option key={k} value={k} />
-              ))}
-            </datalist>
-          </label>
-        </div>
-        <label>
-          Notiz
-          <textarea rows={3} value={form.notiz} onChange={(e) => setForm({ ...form, notiz: e.target.value })} />
+        <label className="feld">
+          <span>Menge</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            value={form.menge}
+            onChange={(e) => setForm({ ...form, menge: e.target.value })}
+          />
         </label>
-        {geaendert && (
-          <button className="btn btn-primaer breit" onClick={speichern}>
-            <Icon name="speichern" size={18} /> Speichern
-          </button>
-        )}
+        <label className="feld">
+          <span>Kategorie</span>
+          <input
+            list="kat-detail"
+            value={form.kategorie}
+            placeholder="keine"
+            onChange={(e) => setForm({ ...form, kategorie: e.target.value })}
+          />
+          <datalist id="kat-detail">
+            {kategorien.map((k) => (
+              <option key={k} value={k} />
+            ))}
+          </datalist>
+        </label>
+        <label className="feld feld-hoch">
+          <span>Notiz</span>
+          <textarea rows={3} value={form.notiz} placeholder="Notiz" onChange={(e) => setForm({ ...form, notiz: e.target.value })} />
+        </label>
       </div>
+      {geaendert && (
+        <button className="btn btn-primaer breit" onClick={speichern}>
+          Speichern
+        </button>
+      )}
 
-      <h2 className="abschnitt">Foto</h2>
+      <h3 className="gruppe-titel">Ort</h3>
+      <ul className="gruppe">
+        <li>
+          <button className="zeile" onClick={() => setOrtWahl(true)}>
+            <span className="zeile-titel">{pfadText(orte, g.ortId, ' › ')}</span>
+            <span className="zeile-wert">Ändern</span>
+            <Icon name="weiter" size={18} />
+          </button>
+        </li>
+        <li>
+          <a className="zeile" href={links.ort(g.ortId, `?g=${g.id}`)}>
+            <span className="zeile-titel blau">Ort öffnen</span>
+          </a>
+        </li>
+        <li>
+          <a className="zeile" href={links.raum3d({ ort: g.ortId })}>
+            <span className="zeile-titel blau">In 3D zeigen</span>
+          </a>
+        </li>
+      </ul>
+
+      <h3 className="gruppe-titel">Foto</h3>
       {fotoUrl ? (
         <div className="foto">
           <img src={fotoUrl} alt={g.name} />
-          <div className="leiste">
-            <button className="btn" onClick={() => fotoInput.current?.click()}>
-              <Icon name="kamera" size={18} /> Ersetzen
-            </button>
-            <button className="btn btn-gefahr" onClick={fotoEntfernen}>
-              Entfernen
-            </button>
-          </div>
+          <ul className="gruppe">
+            <li>
+              <button className="zeile" onClick={() => fotoInput.current?.click()}>
+                <span className="zeile-titel blau">Foto ersetzen</span>
+              </button>
+            </li>
+            <li>
+              <button className="zeile" onClick={fotoEntfernen}>
+                <span className="zeile-titel rot">Foto entfernen</span>
+              </button>
+            </li>
+          </ul>
         </div>
       ) : (
-        <button className="btn breit" onClick={() => fotoInput.current?.click()}>
-          <Icon name="kamera" size={18} /> Foto aufnehmen
-        </button>
+        <ul className="gruppe">
+          <li>
+            <button className="zeile" onClick={() => fotoInput.current?.click()}>
+              <Icon name="kamera" size={20} />
+              <span className="zeile-titel blau">Foto aufnehmen</span>
+            </button>
+          </li>
+        </ul>
       )}
       <input
         ref={fotoInput}
@@ -169,33 +205,34 @@ export function GegenstandSeite({ id }: { id: string }) {
         }}
       />
 
-      <h2 className="abschnitt">Ort</h2>
-      <button className="btn breit links" onClick={() => setOrtWahl(true)}>
-        <Icon name="box" size={18} /> {pfadText(orte, g.ortId)}
-        <span className="rechts gedimmt">ändern</span>
-      </button>
-      <a className="btn breit" href={links.raum3d({ ort: g.ortId })}>
-        <Icon name="wuerfel" size={18} /> In 3D zeigen
-      </a>
+      <ul className="gruppe">
+        <li className="zeile">
+          <span className="zeile-titel">Zuletzt entnommen</span>
+          <span className="zeile-wert">{datumZeit(g.entnommenAm)}</span>
+        </li>
+        <li className="zeile">
+          <span className="zeile-titel">Zuletzt zurückgelegt</span>
+          <span className="zeile-wert">{datumZeit(g.zurueckgelegtAm)}</span>
+        </li>
+        <li className="zeile">
+          <span className="zeile-titel">Erfasst</span>
+          <span className="zeile-wert">{datumZeit(g.erstelltAm)}</span>
+        </li>
+      </ul>
 
-      <dl className="daten">
-        <dt>Zuletzt entnommen</dt>
-        <dd>{datumZeit(g.entnommenAm)}</dd>
-        <dt>Zuletzt zurückgelegt</dt>
-        <dd>{datumZeit(g.zurueckgelegtAm)}</dd>
-        <dt>Erfasst</dt>
-        <dd>{datumZeit(g.erstelltAm)}</dd>
-      </dl>
-
-      <button
-        className="btn btn-gefahr breit"
-        onClick={async () => {
-          await loeschen(g.id);
-          zurueck(links.ort(g.ortId));
-        }}
-      >
-        <Icon name="muell" size={18} /> Löschen
-      </button>
+      <ul className="gruppe">
+        <li>
+          <button
+            className="zeile zeile-mitte"
+            onClick={async () => {
+              await loeschen(g.id);
+              schliessen();
+            }}
+          >
+            <span className="zeile-titel rot">Löschen</span>
+          </button>
+        </li>
+      </ul>
 
       {ortWahl && (
         <OrtWahl
@@ -209,6 +246,6 @@ export function GegenstandSeite({ id }: { id: string }) {
           }}
         />
       )}
-    </div>
+    </Sheet>
   );
 }
