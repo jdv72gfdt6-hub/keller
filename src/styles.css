@@ -1,23 +1,119 @@
-/* Keller – dunkles, futuristisches Design mit dezenten Neon-Akzenten.
-   Mobile first, große Tippflächen, Bedienelemente im Daumenbereich unten. */
+/* Keller – Optik und Bedienung wie die iOS-Apps (Erinnerungen), mit Glas-Elementen ("Liquid Glass").
+   Alle Farben als Variablen: hell ist Standard, dunkel per System (prefers-color-scheme) oder fest
+   über data-theme an <html> (Einstellung unter "Mehr"). */
 
 :root {
-  --bg: #070b12;
-  --bg-2: #0c1220;
-  --flaeche: rgba(255, 255, 255, 0.045);
-  --flaeche-2: rgba(255, 255, 255, 0.08);
-  --rand: rgba(120, 200, 255, 0.14);
-  --text: #e8eef8;
-  --text-2: #8f9bb0;
-  --neon: #3ef0ff;
-  --neon-2: #ff4fd8;
-  --gruen: #4dffa6;
-  --orange: #ffb547;
-  --rot: #ff5d6c;
-  --radius: 14px;
-  --nav-h: 68px;
+  color-scheme: light;
+  --hg: #f2f2f7;
+  --gruppe: #ffffff;
+  --gruppe-2: #f2f2f7;
+  --text: #000000;
+  --text-2: rgba(60, 60, 67, 0.6);
+  --text-3: rgba(60, 60, 67, 0.3);
+  --trenner: #c6c6c8;
+  --fuellung: rgba(120, 120, 128, 0.12);
+  --fuellung-2: rgba(120, 120, 128, 0.2);
+  --segment-aktiv: #ffffff;
+  --gruppe-sheet: #ffffff;
+
+  --blau: #007aff;
+  --orange: #ff9500;
+  --gruen: #34c759;
+  --rot: #ff3b30;
+  --grau: #8e8e93;
+  --tuerkis: #30b0c7;
+  --braun: #a2845e;
+  --gelb: #ffcc00;
+
+  /* Glas: hell = milchig */
+  --glas: rgba(255, 255, 255, 0.62);
+  --glas-aktiv: rgba(255, 255, 255, 0.88);
+  --glas-kante: rgba(255, 255, 255, 0.95);
+  --glas-rand: rgba(0, 0, 0, 0.07);
+  --glas-schatten: 0 8px 28px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.06);
+  --glas-blur: blur(20px) saturate(180%);
+  --sheet: rgba(246, 246, 250, 0.8);
+  --label: rgba(255, 255, 255, 0.82);
+  --dimmer: rgba(0, 0, 0, 0.2);
+
+  --radius-gruppe: 22px;
+  /* Federkurven wie iOS: weich auslaufend bzw. mit leichtem Nachfedern */
+  --feder: cubic-bezier(0.32, 0.72, 0, 1);
+  --feder-hupf: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --dauer: 0.3s;
+
+  --schrift: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  --schrift-rund: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+
+  --oben: env(safe-area-inset-top, 0px);
   --unten: env(safe-area-inset-bottom, 0px);
+  --tab-h: 62px;
+  --tab-abstand: max(calc(var(--unten) - 10px), 12px);
+  --tab-platz: calc(var(--tab-h) + var(--tab-abstand));
+}
+
+/* Dunkel: Hintergrund schwarz, Gruppen #1C1C1E, Glas dunkler und klarer */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --hg: #000000;
+    --gruppe: #1c1c1e;
+    --gruppe-2: #2c2c2e;
+    --text: #ffffff;
+    --text-2: rgba(235, 235, 245, 0.6);
+    --text-3: rgba(235, 235, 245, 0.3);
+    --trenner: #38383a;
+    --fuellung: rgba(118, 118, 128, 0.24);
+    --fuellung-2: rgba(118, 118, 128, 0.36);
+    --segment-aktiv: #636366;
+    --gruppe-sheet: #2c2c2e;
+    --blau: #0a84ff;
+    --orange: #ff9f0a;
+    --gruen: #30d158;
+    --rot: #ff453a;
+    --grau: #6c6c70;
+    --tuerkis: #40c8e0;
+    --braun: #ac8e68;
+    --gelb: #ffd60a;
+    --glas: rgba(38, 38, 41, 0.58);
+    --glas-aktiv: rgba(80, 80, 86, 0.7);
+    --glas-kante: rgba(255, 255, 255, 0.17);
+    --glas-rand: rgba(255, 255, 255, 0.07);
+    --glas-schatten: 0 8px 30px rgba(0, 0, 0, 0.55), 0 1px 4px rgba(0, 0, 0, 0.3);
+    --sheet: rgba(30, 30, 32, 0.78);
+    --label: rgba(36, 36, 38, 0.8);
+    --dimmer: rgba(0, 0, 0, 0.45);
+  }
+}
+:root[data-theme='dark'] {
   color-scheme: dark;
+  --hg: #000000;
+  --gruppe: #1c1c1e;
+  --gruppe-2: #2c2c2e;
+  --text: #ffffff;
+  --text-2: rgba(235, 235, 245, 0.6);
+  --text-3: rgba(235, 235, 245, 0.3);
+  --trenner: #38383a;
+  --fuellung: rgba(118, 118, 128, 0.24);
+  --fuellung-2: rgba(118, 118, 128, 0.36);
+  --segment-aktiv: #636366;
+  --gruppe-sheet: #2c2c2e;
+  --blau: #0a84ff;
+  --orange: #ff9f0a;
+  --gruen: #30d158;
+  --rot: #ff453a;
+  --grau: #6c6c70;
+  --tuerkis: #40c8e0;
+  --braun: #ac8e68;
+  --gelb: #ffd60a;
+  --glas: rgba(38, 38, 41, 0.58);
+  --glas-aktiv: rgba(80, 80, 86, 0.7);
+  --glas-kante: rgba(255, 255, 255, 0.17);
+  --glas-rand: rgba(255, 255, 255, 0.07);
+  --glas-schatten: 0 8px 30px rgba(0, 0, 0, 0.55), 0 1px 4px rgba(0, 0, 0, 0.3);
+  --sheet: rgba(30, 30, 32, 0.78);
+  --label: rgba(36, 36, 38, 0.8);
+  --dimmer: rgba(0, 0, 0, 0.45);
 }
 
 * {
@@ -28,19 +124,20 @@
 html,
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--hg);
   color: var(--text);
-  font: 16px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font: 17px/1.3 var(--schrift);
+  letter-spacing: -0.012em;
   -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
-  background:
-    radial-gradient(120% 60% at 100% 0%, rgba(62, 240, 255, 0.08), transparent 60%),
-    radial-gradient(90% 50% at 0% 100%, rgba(255, 79, 216, 0.06), transparent 60%),
-    var(--bg);
-  background-attachment: fixed;
   min-height: 100dvh;
+}
+
+html.sheet-offen body {
+  overflow: hidden;
 }
 
 a {
@@ -49,9 +146,9 @@ a {
 }
 
 h1 {
-  font-size: 1.6rem;
-  margin: 0.2rem 0 0.6rem;
-  letter-spacing: -0.01em;
+  font: 800 32px/1.1 var(--schrift-rund);
+  letter-spacing: -0.02em;
+  margin: 6px 4px 12px;
 }
 
 h2,
@@ -61,7 +158,7 @@ h3 {
 
 code {
   font-size: 0.85em;
-  color: var(--neon);
+  color: var(--text-2);
   word-break: break-all;
 }
 
@@ -71,31 +168,37 @@ select,
 textarea {
   font: inherit;
   color: inherit;
+  letter-spacing: inherit;
 }
 
 input,
 select,
 textarea {
   width: 100%;
-  background: var(--bg-2);
-  border: 1px solid var(--rand);
-  border-radius: 10px;
-  padding: 0.7rem 0.8rem;
-  font-size: 16px; /* verhindert Zoom auf dem iPhone */
+  background: var(--gruppe);
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 17px; /* ab 16px zoomt das iPhone nicht */
   outline: none;
+  transition: box-shadow 0.2s;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-3);
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: var(--neon);
-  box-shadow: 0 0 0 3px rgba(62, 240, 255, 0.15);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--blau) 55%, transparent);
 }
 
 input[type='checkbox'] {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--neon);
+  width: 22px;
+  height: 22px;
+  accent-color: var(--blau);
   flex: none;
 }
 
@@ -104,11 +207,11 @@ input[type='checkbox'] {
 .app main {
   max-width: 720px;
   margin: 0 auto;
-  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px calc(var(--nav-h) + var(--unten) + 24px);
+  padding: 0 16px calc(var(--tab-platz) + 28px);
 }
 
 .seite-mit-erfassung {
-  padding-bottom: 240px; /* Platz für die fixierte Schnellerfassung (auch mehrzeilig) */
+  padding-bottom: 170px; /* Platz für die schwebende Schnellerfassung */
 }
 
 .laden {
@@ -118,112 +221,512 @@ input[type='checkbox'] {
   color: var(--text-2);
 }
 
-.glas {
-  background: rgba(16, 24, 40, 0.72);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  border: 1px solid var(--rand);
-  border-radius: var(--radius);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
-}
-
 .gedimmt {
   color: var(--text-2);
 }
 .klein {
-  font-size: 0.85rem;
+  font-size: 14px;
 }
 .zentriert {
   text-align: center;
 }
-.warnung {
+.warnung,
+.text-orange {
   color: var(--orange);
+}
+.blau {
+  color: var(--blau);
+}
+.rot {
+  color: var(--rot);
 }
 .leer {
   color: var(--text-2);
-  padding: 1rem 0;
-}
-
-.abschnitt {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-2);
-  margin: 1.4rem 0 0.6rem;
-}
-
-.kopf {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.8rem;
-}
-
-.kopf-ueber,
-.ort-typ {
+  padding: 14px 4px;
   margin: 0;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--neon);
+}
+.rechts {
+  margin-left: auto;
 }
 
-.kopf-stats {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  color: var(--text-2);
-  font-size: 0.85rem;
-}
-.kopf-stats b {
+/* Alte Abschnittsüberschrift (Einrichtung, Etiketten) */
+.abschnitt,
+.gruppe-titel {
+  font: 700 20px/1.2 var(--schrift-rund);
+  letter-spacing: -0.01em;
+  margin: 24px 4px 10px;
   color: var(--text);
 }
+.gruppe-titel .gedimmt {
+  font-weight: 600;
+  margin-left: 4px;
+}
+.gruppe-fuss {
+  margin: -8px 16px 22px;
+  font-size: 13px;
+  color: var(--text-2);
+}
 
-/* ---------- Buttons & Chips ---------- */
+/* ---------- Glas ---------- */
+
+.glas {
+  background: var(--glas);
+  -webkit-backdrop-filter: var(--glas-blur);
+  backdrop-filter: var(--glas-blur);
+  /* feine helle Lichtkante oben, haarfeiner Rand, weicher Schatten */
+  box-shadow:
+    inset 0 1px 0 var(--glas-kante),
+    inset 0 0 0 0.5px var(--glas-rand),
+    var(--glas-schatten);
+  border-radius: 22px;
+}
+
+.glas-knopf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    transform var(--dauer) var(--feder-hupf),
+    background-color 0.2s;
+}
+.glas-knopf.rund {
+  width: 44px;
+  padding: 0;
+}
+.glas-knopf:active {
+  transform: scale(0.9);
+  background: var(--glas-aktiv);
+}
+.glas-knopf.blau {
+  background: var(--blau);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 4px 14px color-mix(in srgb, var(--blau) 35%, transparent);
+}
+.glas-knopf.blau:active {
+  filter: brightness(1.12);
+}
+
+.kapsel {
+  display: inline-flex;
+  align-items: center;
+  height: 50px;
+  padding: 0 3px;
+  border-radius: 999px;
+  transition:
+    transform var(--dauer) var(--feder-hupf),
+    background-color 0.2s;
+}
+.kapsel:has(.kapsel-knopf:active) {
+  transform: scale(0.97);
+  background: var(--glas-aktiv);
+}
+.kapsel-knopf {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    transform var(--dauer) var(--feder-hupf),
+    background-color 0.15s;
+}
+.kapsel-knopf:active {
+  background: var(--fuellung-2);
+  transform: scale(0.88);
+}
+
+/* ---------- Navigationsleiste & großer Titel ---------- */
+
+.navleiste {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  margin: 0 -16px;
+  padding: calc(var(--oben) + 8px) 16px 6px;
+  min-height: calc(var(--oben) + 64px);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  transition:
+    background-color 0.25s,
+    box-shadow 0.25s;
+}
+.navleiste.kompakt {
+  background: var(--glas);
+  -webkit-backdrop-filter: var(--glas-blur);
+  backdrop-filter: var(--glas-blur);
+  box-shadow: 0 0.5px 0 var(--trenner);
+}
+.navleiste-links {
+  justify-self: start;
+}
+.navleiste-rechts {
+  justify-self: end;
+}
+.navleiste-titel {
+  max-width: 52vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 17px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.2s,
+    transform var(--dauer) var(--feder);
+}
+.kompakt .navleiste-titel {
+  opacity: 1;
+  transform: none;
+}
+.zurueck-text {
+  display: none; /* iOS 26: runder Glasknopf, Ziel steht im aria-label */
+}
+.grosstitel {
+  margin: 2px 4px 10px;
+}
+.grosstitel.abstand-oben {
+  margin-top: 26px;
+}
+.grosstitel-unter p {
+  margin: -4px 4px 14px;
+  font-size: 15px;
+}
+
+/* ---------- Übersichtskacheln ---------- */
+
+.kacheln {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 6px;
+}
+.kachel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto 1fr;
+  min-height: 88px;
+  padding: 12px 14px 10px;
+  border-radius: 22px;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform var(--dauer) var(--feder-hupf);
+}
+.kachel:active {
+  transform: scale(0.96);
+}
+.kachel svg {
+  grid-area: 1 / 1;
+}
+.kachel-zahl {
+  grid-area: 1 / 2;
+  font: 800 32px/1 var(--schrift-rund);
+  font-variant-numeric: tabular-nums;
+}
+.kachel-titel {
+  grid-column: 1 / -1;
+  align-self: end;
+  font: 700 17px/1.2 var(--schrift-rund);
+}
+/* weicher Verlauf innerhalb der Kachel (heller Glanz links oben) */
+.kachel-orange {
+  background:
+    radial-gradient(120% 140% at 12% 15%, rgba(255, 255, 255, 0.26), transparent 55%),
+    linear-gradient(120deg, #ffad33, #ff9500 55%, #f58a00);
+}
+.kachel-blau {
+  background:
+    radial-gradient(120% 140% at 12% 15%, rgba(255, 255, 255, 0.24), transparent 55%),
+    linear-gradient(120deg, #3d9bff, #0a84ff 55%, #0074e8);
+}
+
+/* ---------- Listengruppen (Inset Grouped) ---------- */
+
+.gruppe {
+  list-style: none;
+  margin: 12px 0 22px;
+  padding: 0;
+  background: var(--gruppe);
+  border-radius: var(--radius-gruppe);
+  overflow: hidden;
+}
+.gruppe > li,
+.gruppe > .feld {
+  position: relative;
+}
+/* Trennlinie, eingerückt bis zum Text */
+.gruppe > li + li::before,
+.gruppe > .feld + .feld::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 16px;
+  height: 0.5px;
+  background: var(--trenner);
+}
+.gruppe > li:has(.rund-symbol)::before {
+  left: 60px;
+}
+
+.zeile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 54px;
+  padding: 8px 16px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+li.zeile {
+  cursor: default;
+}
+a.zeile:active,
+button.zeile:active {
+  background: var(--fuellung-2);
+  transition: none;
+}
+.zeile-titel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zeile-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0;
+}
+.zeile-zweizeilig .zeile-titel {
+  white-space: normal;
+}
+.zeile-unter {
+  font-size: 14px;
+  color: var(--text-2);
+}
+.zeile-wert {
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.zeile > svg:last-child {
+  flex: none;
+  color: var(--text-3);
+  margin-right: -4px;
+}
+.zeile-mitte {
+  justify-content: center;
+}
+.zeile-mitte .zeile-titel {
+  flex: none;
+}
+
+.rund-symbol {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* ---------- Gegenstandszeilen (mit Wischen) ---------- */
+
+.gz-liste {
+  list-style: none;
+  padding: 0;
+}
+.gz {
+  overflow: hidden;
+}
+.gz-vorne {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  background: var(--gruppe);
+  touch-action: pan-y;
+}
+.gz-vorne.ruhe {
+  transition: transform 0.35s var(--feder);
+}
+.gz-haupt {
+  flex: 1;
+  min-width: 0;
+  min-height: 54px;
+  padding: 10px 8px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.gz-name {
+  overflow-wrap: anywhere;
+}
+.gz-menge {
+  color: var(--text-2);
+  margin-right: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.gz-foto {
+  margin-left: 6px;
+  color: var(--text-3);
+  vertical-align: -1px;
+}
+.gz-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.gz-meta > span + span::before {
+  content: '·';
+  margin-right: 6px;
+}
+.gz-raus {
+  color: var(--orange);
+}
+.gz-status {
+  position: relative;
+  flex: none;
+  min-width: 70px;
+  height: 32px;
+  margin-right: 12px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fuellung);
+  color: var(--blau);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--dauer) var(--feder-hupf);
+}
+.gz-status::after {
+  /* Tippfläche mind. 44 × 44 px */
+  content: '';
+  position: absolute;
+  inset: -6px -4px;
+}
+.gz-status:active {
+  transform: scale(0.92);
+}
+.gz-status-zurueck {
+  background: color-mix(in srgb, var(--orange) 16%, transparent);
+  color: var(--orange);
+}
+.gz-aktion {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 20px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+.gz-aktion-raus {
+  background: var(--orange);
+  justify-content: flex-end;
+}
+.gz-aktion-zurueck {
+  background: var(--gruen);
+  justify-content: flex-start;
+}
+.gz-aktion svg {
+  transition: transform var(--dauer) var(--feder-hupf);
+}
+.gz-aktion.weit svg {
+  transform: scale(1.3);
+}
+.gz-markiert .gz-vorne {
+  animation: markiert 2.4s ease-out both;
+}
+@keyframes markiert {
+  0%,
+  55% {
+    background: color-mix(in srgb, var(--blau) 16%, var(--gruppe));
+  }
+}
+
+/* ---------- Knöpfe, Chips, Segmente ---------- */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 6px;
   min-height: 44px;
-  padding: 0 1rem;
-  border-radius: 12px;
-  border: 1px solid var(--rand);
-  background: var(--flaeche);
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fuellung);
+  color: var(--blau);
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  transition:
+    transform var(--dauer) var(--feder-hupf),
+    opacity 0.2s;
 }
 .btn:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
+  opacity: 0.85;
 }
 .btn:disabled {
   opacity: 0.4;
 }
 .btn-primaer {
-  background: linear-gradient(135deg, rgba(62, 240, 255, 0.25), rgba(62, 240, 255, 0.1));
-  border-color: rgba(62, 240, 255, 0.55);
-  color: #dffcff;
-  box-shadow: 0 0 18px rgba(62, 240, 255, 0.15);
+  background: var(--blau);
+  color: #fff;
 }
 .btn-gefahr {
-  border-color: rgba(255, 93, 108, 0.4);
-  color: #ffb3ba;
+  color: var(--rot);
 }
 .btn.breit {
   width: 100%;
-  margin-top: 0.6rem;
+  min-height: 50px;
+  margin-top: 10px;
 }
 .btn.links {
   justify-content: flex-start;
   white-space: normal;
   text-align: left;
-  padding: 0.6rem 1rem;
-}
-.rechts {
-  margin-left: auto;
+  padding: 10px 16px;
+  border-radius: 14px;
 }
 
 .icon-btn {
@@ -231,436 +734,370 @@ input[type='checkbox'] {
   place-items: center;
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  border: none;
+  border: 0;
+  border-radius: 50%;
   background: transparent;
+  color: var(--blau);
   cursor: pointer;
   flex: none;
+  transition: transform var(--dauer) var(--feder-hupf);
 }
 .icon-btn:active {
-  background: var(--flaeche-2);
+  background: var(--fuellung);
+  transform: scale(0.9);
 }
 
 .leiste {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0.6rem 0;
+  gap: 8px;
+  margin: 10px 0;
 }
 
 .chips {
   display: flex;
-  gap: 0.4rem;
+  gap: 8px;
   overflow-x: auto;
-  margin: 0.6rem 0;
+  margin: 10px 0;
   padding-bottom: 2px;
+  scrollbar-width: none;
 }
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 5px;
   min-height: 36px;
-  padding: 0 0.8rem;
+  padding: 0 14px;
+  border: 0;
   border-radius: 999px;
-  border: 1px solid var(--rand);
-  background: var(--flaeche);
+  background: var(--fuellung);
+  color: var(--text);
+  font-size: 15px;
   white-space: nowrap;
   cursor: pointer;
-  font-size: 0.9rem;
+  transition: transform var(--dauer) var(--feder-hupf);
+}
+.chip:active {
+  transform: scale(0.94);
 }
 .chip.aktiv {
-  border-color: var(--neon);
-  color: var(--neon);
-  background: rgba(62, 240, 255, 0.08);
+  background: var(--blau);
+  color: #fff;
+}
+.chips.umbrechen {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.segment-steuerung {
+  display: flex;
+  padding: 3px;
+  margin: 8px 0 16px;
+  border-radius: 999px;
+  background: var(--fuellung);
+}
+.segment-steuerung button {
+  flex: 1;
+  min-height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--dauer) var(--feder),
+    box-shadow var(--dauer) var(--feder);
+}
+.segment-steuerung button.aktiv {
+  background: var(--segment-aktiv);
+  font-weight: 600;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.12),
+    0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
 .tag {
   display: inline-block;
-  font-size: 0.72rem;
-  padding: 1px 8px;
+  font-size: 12px;
+  padding: 2px 8px;
   border-radius: 999px;
-  background: var(--flaeche-2);
+  background: var(--fuellung);
   color: var(--text-2);
 }
 .tag-orange {
-  background: rgba(255, 181, 71, 0.14);
+  background: color-mix(in srgb, var(--orange) 16%, transparent);
   color: var(--orange);
 }
 
 .zahl {
-  min-width: 26px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: rgba(62, 240, 255, 0.1);
-  color: var(--neon);
-  font-size: 0.78rem;
+  min-width: 18px;
+  color: var(--text-2);
+  font-size: 14px;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
+.chip.aktiv .zahl {
+  color: rgba(255, 255, 255, 0.8);
+}
 .zahl-teil {
-  background: rgba(255, 181, 71, 0.14);
   color: var(--orange);
 }
 .zahl.gross {
-  font-size: 1.4rem;
-  padding: 4px 14px;
+  font-size: 20px;
 }
 
 .farbpunkt {
   display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
   margin-right: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  vertical-align: 1px;
+  box-shadow: 0 0 0 0.5px rgba(128, 128, 128, 0.6);
+  vertical-align: 0;
 }
 .farbpunkt.gross {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
+  width: 18px;
+  height: 18px;
+}
+.zeile .farbpunkt {
+  margin-right: 0;
 }
 
 .hinweis {
-  border: 1px solid rgba(255, 181, 71, 0.4);
-  background: rgba(255, 181, 71, 0.08);
-  border-radius: var(--radius);
-  padding: 0.8rem 1rem;
-  margin: 0.6rem 0;
+  background: color-mix(in srgb, var(--orange) 14%, var(--gruppe));
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin: 10px 0;
 }
 .hinweis p {
-  margin: 0 0 0.4rem;
+  margin: 0 0 6px;
 }
 
-/* ---------- Übersicht / Baum ---------- */
+/* ---------- Suchfeld ---------- */
 
-.suchpille {
+.suchfeld-ios {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  height: 52px;
-  padding: 0 1rem;
+  gap: 6px;
+  height: 42px;
+  padding: 0 12px;
+  margin: 2px 0 10px;
   border-radius: 999px;
-  border: 1px solid var(--rand);
-  background: var(--flaeche);
+  background: var(--fuellung);
   color: var(--text-2);
-  margin: 0.4rem 0;
+}
+.suchfeld-ios input {
+  height: 100%;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none !important;
 }
 
-.baum,
-.baum ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.baum {
-  margin-top: 0.6rem;
-  border: 1px solid var(--rand);
-  border-radius: var(--radius);
-  background: var(--flaeche);
+/* ---------- Möbelseite: Einzelmöbel in 3D ---------- */
+
+.moebel3d {
+  height: min(52vh, 500px);
+  margin-top: 4px;
+  border-radius: var(--radius-gruppe);
   overflow: hidden;
+  background: var(--gruppe);
 }
-.baum-zeile {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 48px;
-  padding-right: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+.moebel3d canvas {
+  touch-action: none;
 }
-.baum-moebel > .baum-zeile {
-  font-weight: 600;
-  background: rgba(62, 240, 255, 0.03);
-}
-.baum-warnung {
-  color: var(--orange);
-}
-.baum-pfeil {
-  width: 36px;
-  height: 44px;
+.moebel3d-laden {
   display: grid;
   place-items: center;
-  border: none;
-  background: none;
-  color: var(--text-2);
-  cursor: pointer;
-  flex: none;
-  transition: transform 0.15s;
-}
-.baum-pfeil.offen {
-  transform: rotate(90deg);
-  color: var(--neon);
-}
-.baum-name {
-  flex: 1;
-  padding: 10px 0;
-}
-.baum-gegenstand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding-right: 12px;
-  font-size: 0.92rem;
-  color: #c9d3e3;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-}
-.baum-gegenstand.entnommen {
-  color: var(--orange);
-}
-.status-punkt {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--gruen);
-  box-shadow: 0 0 6px var(--gruen);
-  flex: none;
-}
-.entnommen .status-punkt {
-  background: var(--orange);
-  box-shadow: 0 0 6px var(--orange);
-}
-
-/* ---------- Ortsseite ---------- */
-
-.krume {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 2px 6px;
-  color: var(--text-2);
-  font-size: 0.88rem;
-  margin: 0 0 0.4rem -10px;
-}
-.krume a {
   color: var(--text-2);
 }
-.krume-trenner {
-  margin-right: 6px;
-  opacity: 0.6;
+.auswahl {
+  margin-top: 20px;
 }
-
-.ort-kopf h1 {
+.auswahl-kopf {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 4px 10px;
 }
-.ort-kopf p {
-  margin: -0.3rem 0 0.4rem;
-}
-
-.karten {
-  list-style: none;
-  padding: 0;
-  margin: 0.6rem 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.5rem;
-}
-.karte {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 0.8rem;
-  min-height: 92px;
-  border-radius: var(--radius);
-  border: 1px solid var(--rand);
-  background: var(--flaeche);
-}
-.karte:active {
-  border-color: var(--neon);
-}
-.karte-titel {
-  font-weight: 600;
-}
-.karte-info {
-  font-size: 0.78rem;
-  color: var(--text-2);
-}
-.karte-zahl {
-  margin-top: auto;
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  font-size: 0.8rem;
-  color: var(--neon);
-}
-
-/* ---------- Gegenstandszeilen ---------- */
-
-.gz-liste {
-  list-style: none;
-  padding: 0;
+.auswahl-typ,
+.ort-typ {
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.gz {
-  display: flex;
-  align-items: stretch;
-  border-radius: 12px;
-  border: 1px solid var(--rand);
-  background: var(--flaeche);
-  overflow: hidden;
-}
-.gz-markiert {
-  border-color: var(--neon);
-  box-shadow: 0 0 0 1px var(--neon), 0 0 22px rgba(62, 240, 255, 0.35);
-  animation: puls 1.4s ease-in-out 3;
-}
-@keyframes puls {
-  50% {
-    box-shadow: 0 0 0 1px var(--neon), 0 0 6px rgba(62, 240, 255, 0.1);
-  }
-}
-.gz-haupt {
-  flex: 1;
-  min-width: 0;
-  padding: 0.65rem 0.8rem;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.gz-name {
-  font-weight: 500;
-  overflow-wrap: anywhere;
-}
-.gz-menge {
-  color: var(--neon);
-  margin-right: 6px;
-  font-variant-numeric: tabular-nums;
-}
-.gz-foto {
-  margin-left: 6px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-2);
-  vertical-align: -2px;
 }
-.gz-meta {
+.auswahl-kopf h2 {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 6px;
   align-items: center;
+  font: 800 26px/1.15 var(--schrift-rund);
+  letter-spacing: -0.015em;
 }
-.gz-meta:empty {
+.auswahl-kopf p {
+  margin: 2px 0 0;
+}
+.auswahl-kopf .glas-knopf {
+  flex: none;
+  color: var(--blau);
+}
+.auswahl-hinweis {
+  margin: 16px 0;
+}
+.als-liste {
+  margin-top: 18px;
+}
+.als-liste summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: var(--radius-gruppe);
+  background: var(--gruppe);
+  color: var(--blau);
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+}
+.als-liste summary::-webkit-details-marker {
   display: none;
 }
-.gz-ort {
-  font-size: 0.78rem;
-  color: var(--text-2);
+.als-liste-pfeil {
+  margin-left: auto;
+  display: grid;
+  color: var(--text-3);
+  transition: transform var(--dauer) var(--feder);
 }
-.gz-entnommen .gz-name {
-  color: var(--orange);
-}
-.gz-status {
-  flex: none;
-  width: 72px;
-  border: none;
-  border-left: 1px solid var(--rand);
-  background: rgba(255, 181, 71, 0.06);
-  color: var(--orange);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  font-size: 0.75rem;
-  cursor: pointer;
-}
-.gz-status-zurueck {
-  background: rgba(77, 255, 166, 0.08);
-  color: var(--gruen);
-}
-.gz-status:active {
-  filter: brightness(1.4);
+.als-liste[open] .als-liste-pfeil {
+  transform: rotate(90deg);
 }
 
-/* ---------- Schnellerfassung ---------- */
+/* ---------- Schnellerfassung (schwebendes Glas über der Tab-Leiste) ---------- */
 
 .schnell {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: calc(var(--nav-h) + var(--unten));
-  z-index: 15;
-  padding: 10px 12px;
-  background: rgba(7, 11, 18, 0.92);
-  border-top: 1px solid var(--rand);
+  left: max(10px, calc(50% - 350px));
+  right: max(10px, calc(50% - 350px));
+  bottom: calc(var(--tab-platz) + 10px);
+  z-index: 28;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 8px;
+  border-radius: 28px;
+  background: var(--glas);
+  -webkit-backdrop-filter: var(--glas-blur);
+  backdrop-filter: var(--glas-blur);
+  box-shadow:
+    inset 0 1px 0 var(--glas-kante),
+    inset 0 0 0 0.5px var(--glas-rand),
+    var(--glas-schatten);
 }
-.schnell > * {
-  max-width: 696px;
-  width: 100%;
-  margin: 0 auto;
+/* Feld und Plus-Knopf in einer Zeile */
+.schnell-zeile {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
 }
 .schnell-feld {
-  border-color: rgba(62, 240, 255, 0.35);
+  flex: 1;
+  min-width: 0;
+  border-radius: 20px;
+  background: var(--fuellung);
+  padding: 11px 16px;
+}
+textarea.schnell-feld {
+  border-radius: 18px;
 }
 .schnell-leiste {
   display: flex;
   gap: 8px;
   align-items: center;
 }
+.schnell-tipp {
+  margin: 0 8px 2px;
+  font-size: 13px;
+  color: var(--text-2);
+}
 .chip-input {
   flex: 1;
   min-width: 0;
-  padding: 0.45rem 0.8rem;
+  min-height: 36px;
+  padding: 0 14px;
   border-radius: 999px;
-  font-size: 16px;
+  background: var(--fuellung);
 }
 .schnell .btn-primaer {
-  min-width: 56px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
-/* ---------- Detailseite ---------- */
+/* ---------- Gegenstand (im Sheet) ---------- */
 
 .status-gross {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.1rem;
-  margin: 0.4rem 0 1rem;
-  border-radius: var(--radius);
-  border: 1px solid rgba(77, 255, 166, 0.4);
-  background: rgba(77, 255, 166, 0.07);
+  gap: 10px;
+  padding: 12px 12px 12px 18px;
+  margin: 4px 0 18px;
+  border: 0;
+  border-radius: var(--radius-gruppe);
+  background: var(--gruppe);
+  color: var(--text);
   cursor: pointer;
 }
 .status-gross-label {
-  font-size: 1.15rem;
-  font-weight: 600;
+  font: 700 20px var(--schrift-rund);
   color: var(--gruen);
 }
 .status-gross-aktion {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--text);
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--orange) 16%, transparent);
+  color: var(--orange);
+  font-weight: 600;
+  transition: transform var(--dauer) var(--feder-hupf);
 }
-.status-gross.ist-entnommen {
-  border-color: rgba(255, 181, 71, 0.5);
-  background: rgba(255, 181, 71, 0.08);
+.status-gross:active .status-gross-aktion {
+  transform: scale(0.94);
 }
 .ist-entnommen .status-gross-label {
   color: var(--orange);
+}
+.ist-entnommen .status-gross-aktion {
+  background: color-mix(in srgb, var(--gruen) 16%, transparent);
+  color: var(--gruen);
 }
 
 .formular {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 12px;
 }
 .formular label {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.82rem;
+  gap: 6px;
+  font-size: 14px;
   color: var(--text-2);
 }
 .formular-reihe {
   display: flex;
-  gap: 0.6rem;
+  gap: 10px;
 }
 .formular-reihe > * {
   flex: 1;
@@ -670,21 +1107,59 @@ input[type='checkbox'] {
   flex: 0 0 90px;
 }
 
+/* Formular als Listengruppe: Beschriftung links, Eingabe rechts */
+.gruppe.formular {
+  display: block;
+  margin-bottom: 8px;
+}
+.formular .feld {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 0 16px;
+  font-size: 17px;
+  color: var(--text);
+}
+.feld > span {
+  flex: none;
+  width: 92px;
+}
+.feld input,
+.feld textarea {
+  padding: 13px 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none !important;
+}
+.formular .feld-hoch {
+  align-items: flex-start;
+}
+.feld-hoch > span {
+  padding-top: 14px;
+}
+.feld textarea {
+  resize: vertical;
+}
+
 .foto img {
+  display: block;
   width: 100%;
-  max-height: 60vh;
+  max-height: 55vh;
   object-fit: contain;
-  border-radius: var(--radius);
-  border: 1px solid var(--rand);
+  border-radius: var(--radius-gruppe);
   background: #000;
 }
 
 .daten {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 6px 16px;
-  margin: 1.2rem 0;
-  font-size: 0.88rem;
+  gap: 10px 16px;
+  margin: 12px 0 22px;
+  padding: 14px 16px;
+  border-radius: var(--radius-gruppe);
+  background: var(--gruppe);
+  font-size: 15px;
 }
 .daten dt {
   color: var(--text-2);
@@ -693,79 +1168,126 @@ input[type='checkbox'] {
   margin: 0;
 }
 
-/* ---------- Auswahl-Overlay & Dialoge ---------- */
+/* ---------- Bottom Sheet ---------- */
 
-.overlay {
+.sheet-ebene {
   position: fixed;
   inset: 0;
-  z-index: 50;
-  background: var(--bg);
+  z-index: 70;
   display: flex;
   flex-direction: column;
-  padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 0;
+  justify-content: flex-end;
 }
-.overlay-mitte {
-  background: rgba(0, 0, 0, 0.6);
-  align-items: center;
-  justify-content: center;
+.sheet-hintergrund {
+  position: absolute;
+  inset: 0;
+  background: var(--dimmer);
+  animation: einblenden 0.3s ease both;
 }
-.overlay-kopf {
+.sheet-panel {
+  position: relative;
   display: flex;
+  flex-direction: column;
+  width: calc(100% - 16px);
+  max-width: 704px;
+  max-height: calc(100dvh - var(--oben) - 16px);
+  margin: 0 auto max(8px, calc(var(--unten) - 22px));
+  border-radius: 34px;
+  overflow: hidden;
+  animation: hochfahren 0.45s var(--feder) both;
+  transition: transform 0.35s var(--feder);
+}
+.sheet-panel.gross {
+  height: calc(100dvh - var(--oben) - 16px);
+}
+.glas-sheet {
+  background: var(--sheet);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--glas-kante),
+    inset 0 0 0 0.5px var(--glas-rand),
+    0 -6px 40px rgba(0, 0, 0, 0.18);
+}
+.zu .sheet-panel {
+  animation: runterfahren 0.26s var(--feder) both;
+}
+.zu .sheet-hintergrund {
+  animation: ausblenden 0.26s ease both;
+}
+.sheet-kopf {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
   align-items: center;
   gap: 8px;
+  padding: 18px 14px 8px;
+  touch-action: none;
+  cursor: grab;
 }
-.overlay-kopf h2 {
-  font-size: 1.1rem;
+.sheet-griff {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 36px;
+  height: 5px;
+  margin-left: -18px;
+  border-radius: 3px;
+  background: var(--text-3);
 }
-.overlay-inhalt {
-  flex: 1;
-  overflow-y: auto;
-  padding-bottom: calc(var(--unten) + 24px);
-}
-.suchfeld {
-  margin: 8px 0;
-}
-.suchfeld.gross {
-  border: none;
-  background: transparent;
-  font-size: 1.25rem;
-  padding: 0.6rem 0;
+.sheet-kopf .glas {
+  background: var(--fuellung);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   box-shadow: none;
 }
-
-.wahl-liste {
-  list-style: none;
-  padding: 0;
+.sheet-titel {
   margin: 0;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.wahl-zeile {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  text-align: left;
-  padding: 0.7rem 0.4rem;
-  min-height: 52px;
-  border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: none;
-  cursor: pointer;
+.sheet-rechts {
+  justify-self: end;
 }
-.wahl-typ {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--neon);
+.sheet-inhalt,
+.infokarte {
+  /* Gruppen heben sich im Sheet ab (dunkel: #2C2C2E auf #1C1C1E) */
+  --gruppe: var(--gruppe-sheet);
+}
+.sheet-inhalt {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 16px 20px;
+}
+@keyframes hochfahren {
+  from {
+    transform: translateY(105%);
+  }
+}
+@keyframes runterfahren {
+  to {
+    transform: translateY(105%);
+  }
+}
+@keyframes einblenden {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ausblenden {
+  to {
+    opacity: 0;
+  }
 }
 
 .qr-karte {
-  width: min(92vw, 380px);
-  padding: 1.2rem;
   text-align: center;
-}
-.qr-karte h2 {
-  margin-bottom: 0.8rem;
+  padding: 4px 0 6px;
 }
 .qr svg {
   display: block;
@@ -773,71 +1295,255 @@ input[type='checkbox'] {
   height: auto;
 }
 .qr-gross {
-  background: #fff;
-  padding: 10px;
-  border-radius: 12px;
-  max-width: 260px;
+  max-width: 240px;
   margin: 0 auto;
+  padding: 12px;
+  border-radius: 20px;
+  background: #fff;
 }
 
-/* ---------- Suche ---------- */
+/* ---------- Menü (Glas-Popover) ---------- */
 
-.such-kopf {
+.menue-ebene {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+}
+.glas-menue {
+  position: absolute;
+  top: calc(var(--oben) + 64px);
+  right: max(12px, calc(50% - 348px));
+  min-width: 250px;
+  max-width: calc(100vw - 24px);
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: 26px;
+  background: var(--sheet);
+  transform-origin: top right;
+  animation: menue-auf 0.38s var(--feder-hupf) both;
+}
+.glas-menue a,
+.glas-menue button {
   display: flex;
   align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid var(--neon);
-  color: var(--neon);
-}
-
-/* ---------- Scan ---------- */
-
-.scan-rahmen {
-  position: relative;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: #000;
-  aspect-ratio: 3 / 4;
-  max-height: 62vh;
-  margin: 0 auto 1rem;
-}
-.scan-rahmen video {
+  justify-content: space-between;
+  gap: 16px;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.scan-sucher {
-  position: absolute;
-  inset: 18%;
-  border: 2px solid var(--neon);
+  min-height: 46px;
+  padding: 0 14px;
+  border: 0;
   border-radius: 18px;
-  box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.35), 0 0 30px rgba(62, 240, 255, 0.5);
+  background: none;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.glas-menue a:active,
+.glas-menue button:active {
+  background: var(--fuellung-2);
+}
+.glas-menue .gefahr {
+  color: var(--rot);
+}
+@keyframes menue-auf {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
 }
 
-/* ---------- Menü (Mehr, Einrichtung) ---------- */
+/* ---------- Schwebender "+"-Knopf ---------- */
+
+.plus-knopf {
+  position: fixed;
+  right: max(16px, calc(50% - 344px));
+  bottom: calc(var(--tab-platz) + 14px);
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: color-mix(in srgb, var(--blau) 90%, transparent);
+  -webkit-backdrop-filter: var(--glas-blur);
+  backdrop-filter: var(--glas-blur);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.12),
+    0 8px 24px color-mix(in srgb, var(--blau) 32%, transparent),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition:
+    transform var(--dauer) var(--feder-hupf),
+    filter 0.2s;
+}
+.plus-knopf:active {
+  transform: scale(0.88);
+  filter: brightness(1.15);
+}
+
+/* ---------- Tab-Leiste (schwebende Glaskapsel) ---------- */
+
+.tableiste {
+  position: fixed;
+  left: 50%;
+  bottom: var(--tab-abstand);
+  z-index: 30;
+  display: flex;
+  width: min(calc(100% - 24px), 520px);
+  height: var(--tab-h);
+  padding: 4px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+}
+.tab {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0;
+  transition:
+    transform var(--dauer) var(--feder-hupf),
+    background-color 0.25s,
+    color 0.25s;
+}
+.tab.aktiv {
+  color: var(--blau);
+  background: var(--fuellung);
+}
+.tab:active {
+  transform: scale(0.9);
+  background: var(--fuellung-2);
+}
+.tab-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.tab-text {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -11px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--rot);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+/* ---------- Toast & Update ---------- */
+
+.toast,
+.update {
+  position: fixed;
+  top: calc(var(--oben) + 10px);
+  left: 50%;
+  z-index: 90;
+  width: min(92vw, 480px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 10px 10px 20px;
+  min-height: 52px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  animation: rein 0.45s var(--feder-hupf) both;
+}
+.update {
+  border-radius: 26px;
+}
+@keyframes rein {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -16px) scale(0.92);
+  }
+}
+.toast-btn {
+  border: 0;
+  background: none;
+  color: var(--blau);
+  font-weight: 600;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+/* ---------- Einrichtung & Etiketten (ältere Seitenstruktur) ---------- */
+
+.krume {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  padding-top: calc(var(--oben) + 8px);
+  color: var(--text-2);
+  font-size: 15px;
+}
+.krume .icon-btn {
+  color: var(--text);
+  background: var(--glas);
+  -webkit-backdrop-filter: var(--glas-blur);
+  backdrop-filter: var(--glas-blur);
+  box-shadow:
+    inset 0 1px 0 var(--glas-kante),
+    inset 0 0 0 0.5px var(--glas-rand),
+    var(--glas-schatten);
+}
+.krume a {
+  color: var(--text-2);
+}
 
 .menue {
   list-style: none;
+  margin: 10px 0 22px;
   padding: 0;
-  margin: 0.4rem 0;
-  border: 1px solid var(--rand);
-  border-radius: var(--radius);
-  background: var(--flaeche);
+  border-radius: var(--radius-gruppe);
+  background: var(--gruppe);
   overflow: hidden;
 }
 .menue a {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   min-height: 54px;
-  padding: 0 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0 16px;
 }
-.menue li:last-child a {
-  border-bottom: none;
+.menue a:active {
+  background: var(--fuellung-2);
+}
+.menue li + li a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 50px;
+  height: 0.5px;
+  background: var(--trenner);
 }
 .menue svg {
-  color: var(--neon);
+  color: var(--blau);
   flex: none;
 }
 
@@ -846,10 +1552,9 @@ input[type='checkbox'] {
   gap: 6px;
 }
 .kallax-raster select {
-  padding: 0.6rem 0.3rem;
-  font-size: 14px;
+  padding: 10px 6px;
+  font-size: 15px;
 }
-
 .segmente {
   list-style: none;
   padding: 0;
@@ -871,31 +1576,30 @@ input[type='checkbox'] {
   flex: none;
 }
 
-/* ---------- Etiketten ---------- */
-
 .etikett-gruppe {
-  border: 1px solid var(--rand);
-  border-radius: 12px;
-  margin: 6px 0;
-  background: var(--flaeche);
+  margin: 8px 0;
+  border-radius: 18px;
+  background: var(--gruppe);
+  overflow: hidden;
 }
 .etikett-gruppe summary {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0.8rem;
+  min-height: 50px;
+  padding: 0 16px;
   cursor: pointer;
   list-style: none;
 }
 .check-zeile {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0.5rem 0.8rem 0.5rem 2.2rem;
-  font-size: 0.9rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  gap: 12px;
+  min-height: 44px;
+  padding: 6px 16px 6px 46px;
+  font-size: 15px;
+  border-top: 0.5px solid var(--trenner);
 }
-
 .etikett-bogen {
   display: flex;
   flex-wrap: wrap;
@@ -903,7 +1607,7 @@ input[type='checkbox'] {
   background: #fff;
   color: #000;
   padding: 6mm;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 .etikett {
   display: flex;
@@ -949,227 +1653,49 @@ input[type='checkbox'] {
   width: 50mm;
 }
 
-/* ---------- Navigation ---------- */
+/* ---------- Scan ---------- */
 
-.nav {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 20;
-  height: calc(var(--nav-h) + var(--unten));
-  padding-bottom: var(--unten);
-  display: flex;
-  justify-content: space-around;
-  align-items: stretch;
-  background: rgba(9, 14, 24, 0.86);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--rand);
-}
-.nav-link {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  color: var(--text-2);
-  font-size: 0.68rem;
-}
-.nav-link.aktiv {
-  color: var(--neon);
-}
-.nav-link.aktiv .nav-icon {
-  filter: drop-shadow(0 0 6px rgba(62, 240, 255, 0.7));
-}
-.nav-icon {
+.scan-rahmen {
   position: relative;
-  display: grid;
-  place-items: center;
+  aspect-ratio: 3 / 4;
+  max-height: 62vh;
+  margin: 0 auto 16px;
+  border-radius: 28px;
+  overflow: hidden;
+  background: #000;
 }
-.nav-gross .nav-icon {
-  width: 52px;
-  height: 52px;
-  margin-top: -18px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, var(--neon), #3a8bff);
-  color: #04121a;
-  box-shadow: 0 0 22px rgba(62, 240, 255, 0.45);
+.scan-rahmen video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-.nav-gross.aktiv .nav-icon {
-  filter: none;
-}
-.badge {
+.scan-sucher {
   position: absolute;
-  top: -6px;
-  right: -12px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
-  background: var(--orange);
-  color: #1a1000;
-  font-size: 0.68rem;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-}
-
-/* ---------- Toast & Update ---------- */
-
-.toast,
-.update {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 60;
-  width: min(92vw, 480px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0.75rem 1rem;
-  animation: rein 0.2s ease-out;
-}
-/* oben, damit der Toast die Schnellerfassung unten nie verdeckt */
-.toast,
-.update {
-  top: calc(env(safe-area-inset-top, 0px) + 10px);
-}
-@keyframes rein {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -10px);
-  }
-}
-.toast-btn {
-  border: none;
-  background: none;
-  color: var(--neon);
-  font-weight: 600;
-  padding: 0.4rem;
-  cursor: pointer;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-/* ---------- Möbelseite: Einzelmöbel in 3D ---------- */
-
-.moebel3d {
-  height: min(52vh, 520px);
-  margin: 0.4rem -16px 0;
-  background: #070b12;
-  border-top: 1px solid var(--rand);
-  border-bottom: 1px solid var(--rand);
-}
-.moebel3d canvas {
-  touch-action: none;
-}
-.moebel3d-laden {
-  display: grid;
-  place-items: center;
-  color: var(--text-2);
-}
-.auswahl {
-  margin-top: 0.8rem;
-}
-.auswahl-kopf {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 0.6rem;
-}
-.auswahl-kopf h2 {
-  font-size: 1.3rem;
-  display: flex;
-  align-items: center;
-}
-.auswahl-kopf p {
-  margin: 2px 0 0;
-}
-.auswahl-hinweis {
-  margin: 0.8rem 0;
-}
-.als-liste {
-  margin-top: 1rem;
-  border: 1px solid var(--rand);
-  border-radius: var(--radius);
-  background: var(--flaeche);
-}
-.als-liste summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 48px;
-  padding: 0 1rem;
-  color: var(--text-2);
-  cursor: pointer;
-  list-style: none;
-}
-.als-liste .karten {
-  padding: 0 0.6rem 0.6rem;
-}
-
-/* ---------- Umschalter Liste / 3D ---------- */
-
-.umschalter {
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 999px;
-  margin: 0.2rem 0;
-}
-.umschalter a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 36px;
-  padding: 0 14px;
-  border-radius: 999px;
-  color: var(--text-2);
-  font-size: 0.9rem;
-}
-.umschalter a.aktiv {
-  background: rgba(62, 240, 255, 0.14);
-  color: var(--neon);
-}
-
-.abschnitt-zeile {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.chips.umbrechen {
-  flex-wrap: wrap;
-  overflow: visible;
+  inset: 18%;
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  border-radius: 24px;
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.35);
 }
 
 /* ---------- 3D-Ansicht ---------- */
 
 .raum3d {
   position: fixed;
-  inset: 0 0 calc(var(--nav-h) + var(--unten)) 0;
-  background: #05080e;
+  inset: 0;
+  background: var(--hg);
 }
 .raum3d canvas {
   touch-action: none;
 }
 .raum3d-oben {
   position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  top: calc(var(--oben) + 10px);
   left: 12px;
-  right: 64px;
+  right: 68px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
   pointer-events: none;
 }
 .raum3d-oben > * {
@@ -1181,38 +1707,72 @@ input[type='checkbox'] {
   gap: 8px;
   width: 100%;
   max-width: 420px;
-  padding: 0 12px;
+  height: 48px;
+  padding: 0 16px;
   border-radius: 999px;
-  color: var(--neon);
+  color: var(--text-2);
 }
 .raum3d-suche input {
-  border: none;
+  height: 100%;
+  padding: 0;
+  border-radius: 0;
   background: transparent;
-  padding: 0.6rem 0;
-  box-shadow: none;
+  box-shadow: none !important;
 }
 .raum3d-treffer {
   max-width: 100%;
   margin: 0;
 }
-.raum3d-treffer .chip {
-  background: rgba(16, 24, 40, 0.85);
+.raum3d-treffer .chip:not(.aktiv) {
+  background: var(--glas);
+  -webkit-backdrop-filter: var(--glas-blur);
+  backdrop-filter: var(--glas-blur);
+  box-shadow:
+    inset 0 1px 0 var(--glas-kante),
+    inset 0 0 0 0.5px var(--glas-rand);
 }
 .raum3d-hinweis {
   margin: 0;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 15px;
 }
 .raum3d-knoepfe {
   position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  top: calc(var(--oben) + 10px);
   right: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
-.raum3d-knoepfe .icon-btn {
-  color: var(--neon);
+.raum3d-knoepfe .glas-knopf {
+  width: 48px;
+  height: 48px;
+}
+
+.umschalter {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+}
+.umschalter a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform var(--dauer) var(--feder-hupf);
+}
+.umschalter a:active {
+  transform: scale(0.94);
+}
+.umschalter a.aktiv {
+  background: var(--fuellung-2);
+  color: var(--blau);
 }
 
 .label-ebene {
@@ -1221,44 +1781,57 @@ input[type='checkbox'] {
   overflow: hidden;
   pointer-events: none;
 }
+/* Beschriftungen: kleine Kapseln (ohne Unschärfe, da sie bei jeder Kamerabewegung neu gesetzt werden) */
 .label3d {
   position: absolute;
   left: 0;
   top: 0;
-  pointer-events: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--label);
+  box-shadow:
+    inset 0 0 0 0.5px var(--glas-rand),
+    0 2px 8px rgba(0, 0, 0, 0.12);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
   white-space: nowrap;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--neon);
-  text-shadow: 0 0 6px rgba(62, 240, 255, 0.6);
+  pointer-events: none;
   user-select: none;
 }
 .label3d.klein {
-  font-size: 10px;
-  color: #c7b8ff;
-  text-shadow: none;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
 }
 
 .infokarte {
   position: absolute;
   left: 8px;
   right: 8px;
-  bottom: 8px;
+  bottom: calc(var(--tab-platz) + 10px);
   z-index: 30;
   max-width: 560px;
+  max-height: calc(60% - var(--tab-platz));
   margin: 0 auto;
-  max-height: 48%;
   display: flex;
   flex-direction: column;
-  padding: 0.8rem 0.9rem 0.6rem;
-  animation: hoch 0.18s ease-out;
+  padding: 16px 16px 14px;
+  border-radius: 30px;
+  background: var(--sheet);
+  animation: hochfahren 0.45s var(--feder) both;
 }
-@keyframes hoch {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
+.infokarte::before {
+  /* Griff wie beim Sheet */
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 36px;
+  height: 5px;
+  margin-left: -18px;
+  border-radius: 3px;
+  background: var(--text-3);
 }
 .infokarte-kopf {
   display: flex;
@@ -1267,20 +1840,38 @@ input[type='checkbox'] {
   gap: 8px;
 }
 .infokarte-kopf h2 {
-  font-size: 1.2rem;
   display: flex;
   align-items: center;
+  font: 800 22px/1.2 var(--schrift-rund);
 }
 .infokarte-kopf p {
   margin: 2px 0 0;
 }
+.infokarte-kopf .glas-knopf {
+  flex: none;
+  background: var(--fuellung);
+}
 .infokarte-inhalt {
   overflow-y: auto;
-  margin-top: 0.5rem;
+  margin-top: 10px;
   overscroll-behavior: contain;
+}
+.infokarte .gruppe {
+  margin: 6px 0 4px;
 }
 .infokarte .leiste {
   margin-bottom: 0;
+}
+
+/* ---------- Bewegung reduzieren ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* ---------- Druck: nur der Etikettenbogen ---------- */
@@ -1293,7 +1884,9 @@ input[type='checkbox'] {
   body {
     background: #fff !important;
   }
-  .nav,
+  .tableiste,
+  .plus-knopf,
+  .navleiste,
   .toast,
   .update,
   .nicht-drucken {
