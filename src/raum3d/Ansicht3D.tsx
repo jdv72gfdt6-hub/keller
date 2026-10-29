@@ -194,15 +194,15 @@ export default function Ansicht3D({ query }: { query: URLSearchParams }) {
 
       <div className="raum3d-knoepfe">
         <button
-          className="icon-btn glas"
+          className="glas glas-knopf rund"
           aria-label="Blick von der Tür"
           title="Blick von der Tür"
           onClick={() => setKamera({ nr: Date.now(), pos: start.pos, ziel: start.ziel })}
         >
-          <Icon name="wuerfel" />
+          <Icon name="zielkreuz" />
         </button>
-        <button className="icon-btn glas" aria-label="Alles schließen" title="Alles schließen" onClick={alleZu}>
-          <Icon name="x" />
+        <button className="glas glas-knopf rund" aria-label="Alles schließen" title="Alles schließen" onClick={alleZu}>
+          <Icon name="zu" />
         </button>
       </div>
 
@@ -231,7 +231,7 @@ function InfoKarte(p: { ortId: string; treffer?: Gegenstand[]; onClose: () => vo
   const kinder = ort.ablage ? ort.kinder.filter((k) => orte.get(k)?.zusatzBox) : ort.kinder;
 
   return (
-    <section className="infokarte glas" aria-label={`Inhalt von ${ort.name}`}>
+    <section className="infokarte glas" role="dialog" aria-label={`Inhalt von ${ort.name}`}>
       <header className="infokarte-kopf">
         <div>
           <p className="ort-typ">{TYP_LABEL[ort.typ]}</p>
@@ -239,10 +239,10 @@ function InfoKarte(p: { ortId: string; treffer?: Gegenstand[]; onClose: () => vo
             {ort.farbe && <span className="farbpunkt" style={{ background: ort.farbe }} />}
             {ort.name}
           </h2>
-          <p className="gedimmt klein">{pfadText(orte, p.ortId)}</p>
+          <p className="gedimmt klein">{pfadText(orte, p.ortId, ' › ')}</p>
         </div>
-        <button className="icon-btn" onClick={p.onClose} aria-label="Schließen">
-          <Icon name="x" />
+        <button className="glas-knopf rund" onClick={p.onClose} aria-label="Schließen">
+          <Icon name="x" size={20} />
         </button>
       </header>
       <div className="infokarte-inhalt">
@@ -260,7 +260,7 @@ function InfoKarte(p: { ortId: string; treffer?: Gegenstand[]; onClose: () => vo
           </div>
         )}
         {items.length > 0 ? (
-          <ul className="gz-liste">
+          <ul className="gruppe gz-liste">
             {items.map((g) => (
               <GegenstandZeile key={g.id} g={g} markiert={trefferIds.has(g.id)} />
             ))}
