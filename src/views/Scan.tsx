@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useKeller } from '../state/KellerContext';
 import { ortIdAusQr } from '../lib/qrBasis';
 import { gehe, links } from '../router';
+import { Seitenkopf } from '../components/Ios';
 
 interface Detector {
   detect(src: CanvasImageSource): Promise<{ rawValue: string }[]>;
@@ -85,12 +86,7 @@ export function Scan() {
 
   return (
     <div className="seite scan">
-      <header className="kopf">
-        <div>
-          <p className="kopf-ueber">Etikett scannen</p>
-          <h1>Scannen</h1>
-        </div>
-      </header>
+      <Seitenkopf titel="Scannen" />
       {fehler ? (
         <p className="hinweis">{fehler}</p>
       ) : (
