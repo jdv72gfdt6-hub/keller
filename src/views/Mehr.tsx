@@ -6,7 +6,9 @@ import { db } from '../db/db';
 import { dateiAusgeben } from '../lib/dateien';
 import { relativ } from '../lib/text';
 import { links } from '../router';
-import { Icon } from '../components/Icon';
+import { Icon, RundSymbol } from '../components/Icon';
+import { Seitenkopf } from '../components/Ios';
+import { themaLaden, themaSetzen, type ThemaWahl } from '../lib/thema';
 import { ConfigHinweis } from '../components/ConfigHinweis';
 
 export function Mehr() {
@@ -16,6 +18,7 @@ export function Mehr() {
   const [speicher, setSpeicher] = useState<string>('');
   const backupInput = useRef<HTMLInputElement>(null);
   const configInput = useRef<HTMLInputElement>(null);
+  const [thema, setThema] = useState<ThemaWahl>(themaLaden);
 
   useEffect(() => {
     db.einstellung<string>('letztesBackup').then(setLetztesBackup);
@@ -67,29 +70,53 @@ export function Mehr() {
 
   return (
     <div className="seite">
-      <header className="kopf">
-        <div>
-          <p className="kopf-ueber">Werkzeuge</p>
-          <h1>Mehr</h1>
-        </div>
-      </header>
+      <Seitenkopf titel="Mehr" />
 
       <ConfigHinweis />
 
-      <ul className="menue">
+      <h2 className="gruppe-titel">Darstellung</h2>
+      <div className="segment-steuerung" role="radiogroup" aria-label="Darstellung">
+        {(
+          [
+            ['system', 'Automatisch'],
+            ['hell', 'Hell'],
+            ['dunkel', 'Dunkel'],
+          ] as [ThemaWahl, string][]
+        ).map(([wert, text]) => (
+          <button
+            key={wert}
+            role="radio"
+            aria-checked={thema === wert}
+            className={thema === wert ? 'aktiv' : ''}
+            onClick={() => {
+              setThema(wert);
+              themaSetzen(wert);
+            }}
+          >
+            {text}
+          </button>
+        ))}
+      </div>
+      <p className="gruppe-fuss">„Automatisch“ folgt der Einstellung des Handys.</p>
+
+      <ul className="gruppe">
         <li>
-          <a href={links.etiketten}>
-            <Icon name="qr" /> QR-Etiketten drucken
+          <a className="zeile" href={links.etiketten}>
+            <RundSymbol glyph="qr" farbe="grau" />
+            <span className="zeile-titel">QR-Etiketten drucken</span>
+            <Icon name="weiter" size={18} />
           </a>
         </li>
         <li>
-          <a href={links.einrichtung}>
-            <Icon name="stift" /> Raum & Möbel bearbeiten
+          <a className="zeile" href={links.einrichtung}>
+            <RundSymbol glyph="stift" farbe="orange" />
+            <span className="zeile-titel">Raum & Möbel bearbeiten</span>
+            <Icon name="weiter" size={18} />
           </a>
         </li>
       </ul>
 
-      <h2 className="abschnitt">Backup</h2>
+      <h2 className="gruppe-titel">Backup</h2>
       <p className={`klein ${backupAlt ? 'warnung' : 'gedimmt'}`}>
         {letztesBackup ? `Letztes Backup ${relativ(letztesBackup)}.` : 'Noch kein Backup erstellt.'} Die Daten liegen nur auf diesem
         Gerät – sichere sie regelmäßig.
@@ -113,7 +140,7 @@ export function Mehr() {
         }}
       />
 
-      <h2 className="abschnitt">Config-Datei</h2>
+      <h2 className="gruppe-titel">Config-Datei</h2>
       <p className="klein gedimmt">
         {overlayAktiv
           ? 'Möbel wurden in der App geändert. Lade die aktuelle keller.config.json herunter und ersetze damit die Datei im Projekt.'
@@ -150,7 +177,7 @@ export function Mehr() {
         }}
       />
 
-      <h2 className="abschnitt">Gerät</h2>
+      <h2 className="gruppe-titel">Gerät</h2>
       <dl className="daten">
         <dt>Gegenstände</dt>
         <dd>{gegenstaende.length}</dd>
