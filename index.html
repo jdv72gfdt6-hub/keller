@@ -3,14 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#070b12" />
+    <meta name="theme-color" content="#f2f2f7" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Keller" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <title>Keller</title>
+    <script>
+      // Hell/Dunkel vor dem ersten Zeichnen setzen (gewählter Modus oder System)
+      (function () {
+        var t = null;
+        try {
+          t = localStorage.getItem('keller.thema');
+        } catch (e) {}
+        var d = t === 'dunkel' || (t !== 'hell' && matchMedia('(prefers-color-scheme: dark)').matches);
+        if (t === 'hell' || t === 'dunkel') document.documentElement.dataset.theme = d ? 'dark' : 'light';
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', d ? '#000000' : '#f2f2f7');
+        // Weiße Uhrzeit nur im Dunkelmodus (sonst unlesbar auf hellem Grund)
+        if (d) document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').setAttribute('content', 'black-translucent');
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
