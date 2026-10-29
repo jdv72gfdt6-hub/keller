@@ -91,7 +91,7 @@ export function MoebelBereich({ moebelId, startWahl }: { moebelId: string; start
         <section className="auswahl" aria-live="polite" ref={bereich}>
           <header className="auswahl-kopf">
             <div>
-              <p className="ort-typ">{TYP_LABEL[ort.typ]}</p>
+              <p className="auswahl-typ">{TYP_LABEL[ort.typ]}</p>
               <h2>
                 {ort.farbe && <span className="farbpunkt" style={{ background: ort.farbe }} />}
                 {ort.name}
@@ -104,12 +104,12 @@ export function MoebelBereich({ moebelId, startWahl }: { moebelId: string; start
                   .join(' · ') || ort.standardName}
               </p>
             </div>
-            <a className="btn" href={links.ort(ort.id)} aria-label={`${ort.name} öffnen`}>
-              <Icon name="weiter" size={18} />
+            <a className="glas glas-knopf rund" href={links.ort(ort.id)} aria-label={`${ort.name} öffnen`}>
+              <Icon name="weiter" size={20} />
             </a>
           </header>
           {items.length ? (
-            <ul className="gz-liste">
+            <ul className="gruppe gz-liste">
               {items.map((g) => (
                 <GegenstandZeile key={g.id} g={g} />
               ))}
