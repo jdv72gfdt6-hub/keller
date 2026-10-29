@@ -1,13 +1,14 @@
-// 3D-Szene mit React Three Fiber. Alles innerhalb der Wurzelgruppe ist in cm (Skalierung 0.01 â†’ Meter).
+// 3D-Szene mit React Three Fiber. Alles innerhalb der Wurzelgruppe ist in cm (Skalierung 0.01 → Meter).
 // Performance: gerendert wird nur bei Bedarf (frameloop="demand"); alle Quader teilen sich eine
 // Einheits-Geometrie, Materialien werden wiederverwendet, keine Schatten.
-import { useEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react';
 import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { Edges, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import type { Gegenstand } from '../db/db';
 import { normalisieren } from '../lib/text';
+import { useDunkel } from '../lib/thema';
 import {
   groesse,
   mitte,
@@ -29,40 +30,112 @@ const EINHEIT = new THREE.BoxGeometry(1, 1, 1);
 const EINHEIT_KANTEN = new THREE.EdgesGeometry(EINHEIT);
 const ZYLINDER = new THREE.CylinderGeometry(0.5, 0.5, 1, 20);
 
-const NEON = '#3ef0ff';
-const AUSWAHL = '#ff4fd8';
+/** Dezente Kanten (passen zu Hell und Dunkel) */
+const KANTE = '#8e8e9380';
 
 const MAT = {
-  boden: new THREE.MeshStandardMaterial({ color: '#0b111b', roughness: 1 }),
-  wand: new THREE.MeshBasicMaterial({ color: NEON, transparent: true, opacity: 0.025, side: THREE.DoubleSide, depthWrite: false }),
+  boden: new THREE.MeshStandardMaterial({ roughness: 1 }),
+  wand: new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide, depthWrite: false }),
   unsichtbar: new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }),
-  rueckwand: new THREE.MeshStandardMaterial({ color: '#161b24', roughness: 1 }),
-  schiebetuer: new THREE.MeshStandardMaterial({ color: '#172131', metalness: 0.4, roughness: 0.35, transparent: true, opacity: 0.88 }),
-  griff: new THREE.MeshStandardMaterial({ color: '#2a2f38', metalness: 0.6, roughness: 0.4 }),
-  griffloch: new THREE.MeshBasicMaterial({ color: '#0a0c10' }),
-  korb: new THREE.MeshStandardMaterial({ color: '#aab4c0', transparent: true, opacity: 0.16, depthWrite: false }),
+  rueckwand: new THREE.MeshStandardMaterial({ roughness: 1 }),
+  schiebetuer: new THREE.MeshStandardMaterial({ metalness: 0.2, roughness: 0.35, transparent: true }),
+  griff: new THREE.MeshStandardMaterial({ metalness: 0.6, roughness: 0.4 }),
+  griffloch: new THREE.MeshBasicMaterial(),
+  korb: new THREE.MeshStandardMaterial({ transparent: true, depthWrite: false }),
   metall: new THREE.MeshStandardMaterial({ color: '#d0d6de', metalness: 0.8, roughness: 0.3 }),
-  inhalt: new THREE.MeshBasicMaterial({ color: NEON, transparent: true, opacity: 0.1, depthWrite: false }),
-  reifen: new THREE.MeshStandardMaterial({ color: '#15171b', roughness: 0.9 }),
-  felge: new THREE.MeshStandardMaterial({ color: '#7d8590', metalness: 0.7, roughness: 0.35 }),
-  zusatzbox: new THREE.MeshStandardMaterial({ color: '#6f5cff', roughness: 0.7 }),
-  objekt: new THREE.MeshStandardMaterial({ color: '#4b5568', roughness: 0.7 }),
+  inhalt: new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false }),
+  reifen: new THREE.MeshStandardMaterial({ color: '#1c1c1e', roughness: 0.9 }),
+  felge: new THREE.MeshStandardMaterial({ color: '#8e8e93', metalness: 0.7, roughness: 0.35 }),
+  zusatzbox: new THREE.MeshStandardMaterial({ roughness: 0.7 }),
+  objekt: new THREE.MeshStandardMaterial({ roughness: 0.7 }),
 };
 
 const LINIE = {
-  raum: new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.35 }),
-  moebel: new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.22 }),
-  tuer: new THREE.LineBasicMaterial({ color: AUSWAHL, transparent: true, opacity: 0.7 }),
-  gitter: new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.06 }),
-  auswahl: new THREE.LineBasicMaterial({ color: AUSWAHL }),
-  treffer: new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 1 }),
-  flaeche: new THREE.LineBasicMaterial({ color: NEON, transparent: true, opacity: 0.3 }),
+  raum: new THREE.LineBasicMaterial({ transparent: true }),
+  moebel: new THREE.LineBasicMaterial({ transparent: true }),
+  tuer: new THREE.LineBasicMaterial({ transparent: true }),
+  gitter: new THREE.LineBasicMaterial({ transparent: true }),
+  /** Auswahl: dünne blaue Kontur */
+  auswahl: new THREE.LineBasicMaterial(),
+  /** Suchtreffer: orange Kontur (pulsiert leicht) */
+  treffer: new THREE.LineBasicMaterial({ transparent: true, opacity: 1 }),
+  flaeche: new THREE.LineBasicMaterial({ transparent: true }),
 };
 
-const GLOW = {
-  auswahl: new THREE.MeshBasicMaterial({ color: AUSWAHL, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending }),
-  treffer: new THREE.MeshBasicMaterial({ color: NEON, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending }),
+type Farbe = [farbe: string, deckkraft?: number];
+interface Palette {
+  raum: string;
+  moebel: string;
+  licht: [himmel: string, boden: string, staerke: number, sonne: number];
+  mat: Partial<Record<keyof typeof MAT, Farbe>>;
+  linie: Partial<Record<keyof typeof LINIE, Farbe>>;
+}
+
+/** iOS-nahe Farben: heller Raum im Hellmodus, dunkler Raum im Dunkelmodus */
+const PALETTE: Record<'hell' | 'dunkel', Palette> = {
+  hell: {
+    raum: '#f2f2f7',
+    moebel: '#ffffff',
+    licht: ['#ffffff', '#d8d8de', 1.35, 1.25],
+    mat: {
+      boden: ['#e5e5ea'],
+      wand: ['#000000', 0.025],
+      rueckwand: ['#d1d1d6'],
+      schiebetuer: ['#e9e9ee', 0.82],
+      griff: ['#aeaeb2'],
+      griffloch: ['#3a3a3c'],
+      korb: ['#8e8e93', 0.2],
+      inhalt: ['#007aff', 0.1],
+      zusatzbox: ['#aeaeb2'],
+      objekt: ['#aeaeb2'],
+    },
+    linie: {
+      raum: ['#8e8e93', 0.7],
+      moebel: ['#000000', 0.1],
+      tuer: ['#8e8e93', 0.9],
+      gitter: ['#000000', 0.06],
+      auswahl: ['#007aff'],
+      treffer: ['#ff9500'],
+      flaeche: ['#8e8e93', 0.55],
+    },
+  },
+  dunkel: {
+    raum: '#0b0b0d',
+    moebel: '#1c1c1e',
+    licht: ['#e8ecf2', '#202024', 1.05, 1.2],
+    mat: {
+      boden: ['#1c1c1e'],
+      wand: ['#ffffff', 0.03],
+      rueckwand: ['#2c2c2e'],
+      schiebetuer: ['#3a3a3c', 0.85],
+      griff: ['#48484a'],
+      griffloch: ['#0a0a0a'],
+      korb: ['#c7c7cc', 0.18],
+      inhalt: ['#0a84ff', 0.14],
+      zusatzbox: ['#8e8e93'],
+      objekt: ['#48484a'],
+    },
+    linie: {
+      raum: ['#636366', 0.8],
+      moebel: ['#ffffff', 0.12],
+      tuer: ['#8e8e93', 0.9],
+      gitter: ['#ffffff', 0.05],
+      auswahl: ['#0a84ff'],
+      treffer: ['#ff9f0a'],
+      flaeche: ['#8e8e93', 0.5],
+    },
+  },
 };
+
+function paletteAnwenden(p: Palette) {
+  const setze = (m: THREE.Material & { color: THREE.Color }, [farbe, deckkraft]: Farbe) => {
+    m.color.set(farbe);
+    if (deckkraft !== undefined) m.opacity = deckkraft;
+  };
+  for (const [k, f] of Object.entries(p.mat)) setze(MAT[k as keyof typeof MAT], f);
+  for (const [k, f] of Object.entries(p.linie)) setze(LINIE[k as keyof typeof LINIE], f);
+}
+paletteAnwenden(PALETTE.hell);
 
 const farbCache = new Map<string, THREE.MeshStandardMaterial>();
 function farbMat(farbe: string): THREE.MeshStandardMaterial {
@@ -105,15 +178,10 @@ function Kasten({ q, mat, onTap, kanten }: { q: Quader; mat: THREE.Material; onT
   );
 }
 
-/** Kantenrahmen um einen Quader, optional mit Leuchtvolumen. */
-function Rahmen({ q, linie, glow, rand = 0 }: { q: Quader; linie: THREE.LineBasicMaterial; glow?: THREE.Material; rand?: number }) {
+/** Dünne Kontur um einen Quader. */
+function Rahmen({ q, linie, rand = 0 }: { q: Quader; linie: THREE.LineBasicMaterial; rand?: number }) {
   const g = groesse(q).map((x) => x + rand) as Vec3;
-  return (
-    <>
-      <lineSegments position={mitte(q)} scale={g} geometry={EINHEIT_KANTEN} material={linie} />
-      {glow && <mesh position={mitte(q)} scale={g} geometry={EINHEIT} material={glow} raycast={() => null} />}
-    </>
-  );
+  return <lineSegments position={mitte(q)} scale={g} geometry={EINHEIT_KANTEN} material={linie} />;
 }
 
 // ---------- Szene ----------
@@ -124,7 +192,7 @@ export interface SzenenZustand {
   schiebeOffen: string | null;
   tueren: Set<string>;
   hervor: Set<string>;
-  /** Orts-IDs mit Inhalt (für dezentes Leuchten offener Fächer) */
+  /** Orts-IDs mit Inhalt (offene Fächer bekommen eine dezente Bodenfläche) */
   mitInhalt: Set<string>;
   /** Offene Fächer, Böden und Stangen mit dezentem Umriss als antippbar kennzeichnen (Einzelmöbel-Ansicht) */
   flaechenZeigen?: boolean;
@@ -162,13 +230,23 @@ interface Props {
   beschriftungsEbene: RefObject<HTMLDivElement | null>;
 }
 
-/** Gemeinsame Beleuchtung für Raum- und Einzelmöbel-Ansicht */
-export function Licht() {
+/** Hintergrund, Beleuchtung und Materialfarben passend zu Hell/Dunkel (Raum- und Einzelmöbel-Ansicht) */
+export function Umgebung({ art }: { art: 'raum' | 'moebel' }) {
+  const dunkel = useDunkel();
+  const p = PALETTE[dunkel ? 'dunkel' : 'hell'];
+  const invalidate = useThree((s) => s.invalidate);
+  const scene = useThree((s) => s.scene);
+  useLayoutEffect(() => {
+    paletteAnwenden(p);
+    scene.background = new THREE.Color(p[art]);
+    invalidate();
+  }, [p, art, scene, invalidate]);
+  const [himmel, boden, staerke, sonne] = p.licht;
   return (
     <>
-      <hemisphereLight args={['#cfeeff', '#1a1222', 1.1]} />
-      <directionalLight position={[2.5, 4, 1.5]} intensity={1.3} />
-      <directionalLight position={[-1, 2, 3]} intensity={0.35} color="#9fd8ff" />
+      <hemisphereLight color={himmel} groundColor={boden} intensity={staerke} />
+      <directionalLight position={[2.5, 4, 1.5]} intensity={sonne} />
+      <directionalLight position={[-1, 2, 3]} intensity={0.35} />
     </>
   );
 }
@@ -176,8 +254,7 @@ export function Licht() {
 export function Szene({ r, z, a, start, kamera, beschriftungen, beschriftungsEbene }: Props) {
   return (
     <>
-      <color attach="background" args={['#05080e']} />
-      <Licht />
+      <Umgebung art="raum" />
       <OrbitControls
         makeDefault
         target={start.ziel}
@@ -256,15 +333,14 @@ function KameraFuehrung({ auftrag }: { auftrag: KameraAuftrag | null }) {
   return null;
 }
 
-/** Lässt die Rahmen von Suchtreffern pulsieren (nur solange es Treffer gibt). */
+/** Lässt die Kontur von Suchtreffern sanft pulsieren (nur solange es Treffer gibt). */
 function Pulsieren({ aktiv }: { aktiv: boolean }) {
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => invalidate(), [aktiv, invalidate]);
   useFrame(({ clock }) => {
     if (!aktiv) return;
     const p = 0.5 + 0.5 * Math.sin(clock.elapsedTime * 4);
-    LINIE.treffer.opacity = 0.45 + 0.55 * p;
-    GLOW.treffer.opacity = 0.06 + 0.14 * p;
+    LINIE.treffer.opacity = 0.4 + 0.6 * p;
     invalidate();
   });
   return null;
@@ -395,6 +471,8 @@ interface ElementProps {
 function ElementAnsicht({ e, korpus, raus, gewaehlt, hervor, hatInhalt, umriss, onTap }: ElementProps) {
   const ref = useRef<THREE.Group>(null);
   useGlatt(raus ? e.auszug : 0, (v) => ref.current && (ref.current.position.z = v));
+  // Ausgewähltes leicht anheben
+  useGlatt(gewaehlt && e.art !== 'fach' && e.art !== 'stange' ? 1.2 : 0, (v) => ref.current && (ref.current.position.y = v), 0, 12);
   const q = e.q;
   const [w, h] = groesse(q);
   const c = mitte(q);
@@ -447,11 +525,11 @@ function ElementAnsicht({ e, korpus, raus, gewaehlt, hervor, hatInhalt, umriss, 
       koerper = <Kasten q={q} mat={MAT.unsichtbar} onTap={onTap} />;
       break;
     case 'zusatzbox':
-      koerper = <Kasten q={q} mat={MAT.zusatzbox} onTap={onTap} kanten="#b9adff" />;
+      koerper = <Kasten q={q} mat={MAT.zusatzbox} onTap={onTap} kanten={KANTE} />;
       break;
   }
 
-  // Offene Fächer, Böden und Stangen mit Inhalt leuchten dezent am Boden
+  // Offene Fächer, Böden und Stangen mit Inhalt bekommen eine dezente Bodenfläche
   const flaeche = e.art === 'fach' || e.art === 'boden' || e.art === 'stange';
   const glimmen = hatInhalt && flaeche;
 
@@ -460,8 +538,8 @@ function ElementAnsicht({ e, korpus, raus, gewaehlt, hervor, hatInhalt, umriss, 
       {koerper}
       {umriss && flaeche && !gewaehlt && !hervor && <Rahmen q={q} linie={LINIE.flaeche} rand={-1.5} />}
       {glimmen && <Kasten q={quader(q.min[0] + 1, q.min[1] + 0.1, q.min[2] + 1, q.max[0] - 1, q.min[1] + Math.min(4, h), q.max[2] - 1)} mat={MAT.inhalt} />}
-      {gewaehlt && <Rahmen q={q} linie={LINIE.auswahl} glow={GLOW.auswahl} rand={1.5} />}
-      {hervor && !gewaehlt && <Rahmen q={q} linie={LINIE.treffer} glow={GLOW.treffer} rand={1.5} />}
+      {gewaehlt && <Rahmen q={q} linie={LINIE.auswahl} rand={1} />}
+      {hervor && !gewaehlt && <Rahmen q={q} linie={LINIE.treffer} rand={1.5} />}
     </group>
   );
 }
@@ -474,10 +552,10 @@ function Drehtuer(p: { t: Drehtuer3D; mat: THREE.Material; offen: boolean; gewae
   const lokal = quader(0, p.t.q.min[1], 0, w, p.t.q.max[1], d);
   return (
     <group ref={ref} position={[p.t.q.min[0], 0, p.t.q.min[2]]}>
-      <Kasten q={lokal} mat={p.mat} onTap={p.onTap} kanten="#3ef0ff40" />
+      <Kasten q={lokal} mat={p.mat} onTap={p.onTap} kanten={KANTE} />
       <Kasten q={quader(w - 5, mitte(lokal)[1] - Math.min(12, h / 4), d, w - 3.5, mitte(lokal)[1] + Math.min(12, h / 4), d + 2)} mat={MAT.metall} />
       {p.gewaehlt && <Rahmen q={lokal} linie={LINIE.auswahl} rand={1} />}
-      {p.hervor && !p.gewaehlt && <Rahmen q={lokal} linie={LINIE.treffer} glow={GLOW.treffer} rand={1} />}
+      {p.hervor && !p.gewaehlt && <Rahmen q={lokal} linie={LINIE.treffer} rand={1} />}
     </group>
   );
 }
@@ -506,7 +584,7 @@ function SchiebeTuer({ s, i, offen, a }: { s: Schiebe3D; i: number; offen: strin
   const q = quader(-s.breite / 2 + 0.3, -s.hoehe / 2, -0.9, s.breite / 2 - 0.3, s.hoehe / 2, 0.9);
   return (
     <group ref={ref} position={heim} rotation-y={s.rotY}>
-      <Kasten q={q} mat={MAT.schiebetuer} onTap={() => a.schiebe(s.ueber[slot])} kanten="#3ef0ff66" />
+      <Kasten q={q} mat={MAT.schiebetuer} onTap={() => a.schiebe(s.ueber[slot])} kanten={KANTE} />
       {/* Griffleiste */}
       <Kasten q={quader(s.breite / 2 - 3, -s.hoehe / 2 + 2, 0.9, s.breite / 2 - 1.5, s.hoehe / 2 - 2, 1.4)} mat={MAT.griff} />
     </group>
@@ -520,7 +598,7 @@ const KOFFERFARBEN: [string, string][] = [
   ['pink', '#ff86c8'],
   ['schwarz', '#262a31'],
   ['rot', '#e5484d'],
-  ['blau', '#4d7cff'],
+  ['blau', '#0a84ff'],
   ['grun', '#3fbf7f'],
   ['grau', '#8a93a3'],
   ['silber', '#c4cad3'],
@@ -529,7 +607,7 @@ const KOFFERFARBEN: [string, string][] = [
 
 function kofferFarbe(name: string): string {
   const n = normalisieren(name);
-  return KOFFERFARBEN.find(([k]) => n.includes(k))?.[1] ?? '#7a5cff';
+  return KOFFERFARBEN.find(([k]) => n.includes(k))?.[1] ?? '#8e8e93';
 }
 
 function FreiAnsicht({ f, z, a }: { f: Frei3D; z: SzenenZustand; a: SzenenAktionen }) {
@@ -588,7 +666,7 @@ function FreiAnsicht({ f, z, a }: { f: Frei3D; z: SzenenZustand; a: SzenenAktion
       </group>
     );
   } else {
-    koerper = <Kasten q={f.q} mat={MAT.objekt} onTap={tap} kanten={NEON} />;
+    koerper = <Kasten q={f.q} mat={MAT.objekt} onTap={tap} kanten={KANTE} />;
   }
 
   const gewaehlt = z.auswahl === f.fp.id;
@@ -596,8 +674,8 @@ function FreiAnsicht({ f, z, a }: { f: Frei3D; z: SzenenZustand; a: SzenenAktion
   return (
     <>
       {koerper}
-      {gewaehlt && <Rahmen q={f.q} linie={LINIE.auswahl} glow={GLOW.auswahl} rand={3} />}
-      {hervor && !gewaehlt && <Rahmen q={f.q} linie={LINIE.treffer} glow={GLOW.treffer} rand={3} />}
+      {gewaehlt && <Rahmen q={f.q} linie={LINIE.auswahl} rand={3} />}
+      {hervor && !gewaehlt && <Rahmen q={f.q} linie={LINIE.treffer} rand={3} />}
     </>
   );
 }
