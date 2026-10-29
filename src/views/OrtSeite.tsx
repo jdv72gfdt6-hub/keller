@@ -2,9 +2,10 @@
 // Hierher führen auch die QR-Codes.
 import { useEffect, useState, type ReactNode } from 'react';
 import { useKeller } from '../state/KellerContext';
-import { pfad, TYP_LABEL, RAUM_ID } from '../config/orte';
+import { TYP_LABEL, RAUM_ID } from '../config/orte';
 import { links, zurueck } from '../router';
 import { Icon } from '../components/Icon';
+import { Kapsel, KapselKnopf, Menue, Seitenkopf, Sheet, type MenuePunkt } from '../components/Ios';
 import { GegenstandZeile } from '../components/GegenstandZeile';
 import { Schnellerfassung } from '../components/Schnellerfassung';
 import { QrCode } from '../components/QrCode';
@@ -16,6 +17,7 @@ import { MoebelBereich } from './MoebelBereich';
 export function OrtSeite({ id, query }: { id: string; query: URLSearchParams }) {
   const { orte, proOrt, zaehlung, config, configSpeichern, verschieben, zeigeToast } = useKeller();
   const [qrOffen, setQrOffen] = useState(false);
+  const [menue, setMenue] = useState(false);
   const ort = orte.get(id);
   const markiert = query.get('g');
 
@@ -31,21 +33,18 @@ export function OrtSeite({ id, query }: { id: string; query: URLSearchParams }) 
   if (!ort) {
     return (
       <div className="seite">
+        <Seitenkopf titel="Nicht gefunden" zurueck={{ text: 'Mein Keller', onClick: () => zurueck(links.start) }} />
         <p className="leer">
           Diesen Ort gibt es nicht (mehr): <code>{id}</code>
           <br />
           Vielleicht wurde das Möbel umgebaut.
         </p>
-        <a className="btn" href={links.start}>
-          Zur Übersicht
-        </a>
       </div>
     );
   }
 
   const items = proOrt.get(id) ?? [];
-  const p = pfad(orte, id);
-  const eltern = ort.parentId && ort.parentId !== RAUM_ID ? ort.parentId : null;
+  const eltern = ort.parentId && ort.parentId !== RAUM_ID ? orte.get(ort.parentId) : undefined;
 
   async function umbenennen() {
     const name = prompt(`Neuer Name für „${ort!.name}“ (leer = Standard „${ort!.standardName}“):`, ort!.name);
@@ -82,83 +81,63 @@ export function OrtSeite({ id, query }: { id: string; query: URLSearchParams }) 
     location.hash = ort!.parentId && ort!.parentId !== RAUM_ID ? links.ort(ort!.parentId) : links.start;
   }
 
+  const menuePunkte: MenuePunkt[] = [
+    { icon: 'qr', text: 'QR-Code & Etikett', onClick: () => setQrOffen(true) },
+    { icon: 'wuerfel', text: 'Im Raum zeigen (3D)', href: links.raum3d({ ort: id }) },
+  ];
+  if (ort.typ === 'moebel') menuePunkte.push({ icon: 'stift', text: 'Möbel bearbeiten', href: `#/einrichtung/moebel/${ort.id}` });
+  else menuePunkte.push({ icon: 'stift', text: 'Umbenennen', onClick: umbenennen });
+  if (ort.ablage && ort.typ !== 'box') menuePunkte.push({ icon: 'box', text: 'Box hineinstellen', onClick: boxHinzufuegen });
+  if (ort.zusatzBox) menuePunkte.push({ icon: 'muell', text: 'Box entfernen', onClick: boxEntfernen, gefahr: true });
+
+  const unter = [TYP_LABEL[ort.typ], ort.name !== ort.standardName ? ort.standardName : '', ort.info ?? ''].filter(Boolean).join(' · ');
+
   return (
     <div className="seite seite-mit-erfassung">
-      <nav className="krume" aria-label="Pfad">
-        <button className="icon-btn" onClick={() => zurueck(eltern ? links.ort(eltern) : links.start)} aria-label="Zurück">
-          <Icon name="zurueck" />
-        </button>
-        <a href={links.start}>{config.raum.name}</a>
-        {p.slice(0, -1).map((o) => (
-          <span key={o.id}>
-            <span className="krume-trenner">›</span>
-            <a href={links.ort(o.id)}>{o.name}</a>
-          </span>
-        ))}
-      </nav>
-
-      <header className="ort-kopf">
-        <span className="ort-typ">{TYP_LABEL[ort.typ]}</span>
-        <h1>
-          {ort.farbe && <span className="farbpunkt gross" style={{ background: ort.farbe }} />}
-          {ort.name}
-        </h1>
-        {ort.name !== ort.standardName && <p className="gedimmt">{ort.standardName}</p>}
-        {ort.info && <p className="gedimmt">{ort.info}</p>}
-      </header>
-
-      <div className="leiste">
-        <button className="btn" onClick={() => setQrOffen(true)}>
-          <Icon name="qr" size={18} /> QR
-        </button>
-        <a className="btn" href={links.raum3d({ ort: id })}>
-          <Icon name="wuerfel" size={18} /> 3D
-        </a>
-        {ort.typ !== 'moebel' && (
-          <button className="btn" onClick={umbenennen}>
-            <Icon name="stift" size={18} /> Name
-          </button>
-        )}
-        {ort.ablage && ort.typ !== 'box' && (
-          <button className="btn" onClick={boxHinzufuegen}>
-            <Icon name="box" size={18} /> Box rein
-          </button>
-        )}
-        {ort.zusatzBox && (
-          <button className="btn btn-gefahr" onClick={boxEntfernen}>
-            <Icon name="muell" size={18} /> Box weg
-          </button>
-        )}
-        {ort.typ === 'moebel' && (
-          <a className="btn" href={`#/einrichtung/moebel/${ort.id}`}>
-            <Icon name="stift" size={18} /> Bearbeiten
-          </a>
-        )}
-      </div>
+      <Seitenkopf
+        titel={ort.name}
+        zurueck={{
+          text: eltern?.name ?? (ort.typ === 'frei' ? 'Freie Positionen' : 'Mein Keller'),
+          onClick: () => zurueck(eltern ? links.ort(eltern.id) : ort.typ === 'frei' ? links.frei : links.start),
+        }}
+        aktionen={
+          <Kapsel>
+            <KapselKnopf icon="qr" label="QR-Code" onClick={() => setQrOffen(true)} />
+            <KapselKnopf icon="mehr" label="Mehr" onClick={() => setMenue(true)} />
+          </Kapsel>
+        }
+        unter={
+          <p className="gedimmt">
+            {ort.farbe && <span className="farbpunkt" style={{ background: ort.farbe }} />}
+            {unter}
+          </p>
+        }
+      />
 
       {ort.typ === 'moebel' && <MoebelBereich moebelId={id} startWahl={query.get('wahl')} />}
 
       {ort.kinder.length > 0 && (
         <AlsListe ausklappbar={ort.typ === 'moebel'}>
-          <ul className="karten">
+          <ul className="gruppe">
             {ort.kinder.map((kid) => {
               const k = orte.get(kid)!;
               const z = zaehlung(kid);
+              const info = [TYP_LABEL[k.typ], k.kinder.length > 0 && k.typ === 'fach' ? orte.get(k.kinder[0])!.name : '']
+                .filter(Boolean)
+                .join(' · ');
               return (
                 <li key={kid}>
-                  <a className="karte" href={links.ort(kid)}>
-                    <span className="karte-titel">
-                      {k.farbe && <span className="farbpunkt" style={{ background: k.farbe }} />}
-                      {k.name}
+                  <a className="zeile zeile-zweizeilig" href={links.ort(kid)}>
+                    {k.farbe && <span className="farbpunkt gross" style={{ background: k.farbe }} />}
+                    <span className="zeile-text">
+                      <span className="zeile-titel">{k.name}</span>
+                      <span className="zeile-unter">
+                        {info}
+                        {z.entnommen > 0 && <span className="text-orange"> · {z.entnommen} entnommen</span>}
+                      </span>
                     </span>
-                    <span className="karte-info">
-                      {TYP_LABEL[k.typ]}
-                      {k.kinder.length > 0 && k.typ === 'fach' && ` · ${orte.get(k.kinder[0])!.name}`}
-                    </span>
-                    <span className="karte-zahl">
-                      {z.gesamt > 0 ? `${z.gesamt} Ggst.` : 'leer'}
-                      {z.entnommen > 0 && <span className="tag tag-orange">{z.entnommen} raus</span>}
-                    </span>
+                    <span className="zeile-wert">{z.gesamt || ''}</span>
+                    <Icon name="weiter" size={18} />
                   </a>
                 </li>
               );
@@ -169,11 +148,11 @@ export function OrtSeite({ id, query }: { id: string; query: URLSearchParams }) 
 
       {(ort.ablage || items.length > 0) && (
         <>
-          <h2 className="abschnitt">
-            Inhalt <span className="gedimmt">({items.length})</span>
+          <h2 className="gruppe-titel">
+            Inhalt <span className="gedimmt">{items.length}</span>
           </h2>
           {items.length ? (
-            <ul className="gz-liste">
+            <ul className="gruppe gz-liste">
               {items.map((g) => (
                 <GegenstandZeile key={g.id} g={g} markiert={g.id === markiert} />
               ))}
@@ -186,6 +165,7 @@ export function OrtSeite({ id, query }: { id: string; query: URLSearchParams }) 
 
       {ort.ablage && <Schnellerfassung ortId={id} autoFokus={query.get('neu') === '1'} />}
 
+      {menue && <Menue punkte={menuePunkte} onClose={() => setMenue(false)} />}
       {qrOffen && <QrDialog ortId={id} name={ort.name} onClose={() => setQrOffen(false)} />}
     </div>
   );
@@ -198,6 +178,9 @@ function AlsListe({ ausklappbar, children }: { ausklappbar: boolean; children: R
     <details className="als-liste">
       <summary>
         <Icon name="liste" size={18} /> Als Liste anzeigen
+        <span className="als-liste-pfeil">
+          <Icon name="weiter" size={16} />
+        </span>
       </summary>
       {children}
     </details>
@@ -210,20 +193,14 @@ function QrDialog({ ortId, name, onClose }: { ortId: string; name: string; onClo
     qrBasisLaden().then(setBasis);
   }, []);
   return (
-    <div className="overlay overlay-mitte" role="dialog" aria-modal="true" onClick={onClose}>
-      <div className="glas qr-karte" onClick={(e) => e.stopPropagation()}>
-        <h2>{name}</h2>
+    <Sheet titel={name} onClose={onClose} label={`QR-Code für ${name}`}>
+      <div className="qr-karte">
         {basis && <QrCode text={ortUrl(basis, ortId)} className="qr-gross" />}
         <p className="gedimmt klein">{ortId}</p>
-        <div className="leiste">
-          <a className="btn btn-primaer" href={`${links.etiketten}?ids=${encodeURIComponent(ortId)}`}>
-            <Icon name="drucker" size={18} /> Etikett drucken
-          </a>
-          <button className="btn" onClick={onClose}>
-            Schließen
-          </button>
-        </div>
+        <a className="btn btn-primaer breit" href={`${links.etiketten}?ids=${encodeURIComponent(ortId)}`}>
+          <Icon name="drucker" size={18} /> Etikett drucken
+        </a>
       </div>
-    </div>
+    </Sheet>
   );
 }
