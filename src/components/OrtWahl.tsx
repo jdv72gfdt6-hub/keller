@@ -1,10 +1,11 @@
-// Vollbild-Auswahl eines Ablageorts (zum Erfassen oder Verschieben), mit Suche und zuletzt genutzten Orten.
+// Auswahl eines Ablageorts als Sheet (zum Erfassen oder Verschieben), mit Suche und zuletzt genutzten Orten.
 import { useEffect, useMemo, useState } from 'react';
 import { useKeller } from '../state/KellerContext';
 import { pfadText, TYP_LABEL } from '../config/orte';
 import { normalisieren } from '../lib/text';
 import { db } from '../db/db';
 import { Icon } from './Icon';
+import { Sheet } from './Ios';
 
 export async function zuletztGenutztMerken(ortId: string) {
   const alt = (await db.einstellung<string[]>('zuletztOrte')) ?? [];
@@ -40,33 +41,32 @@ export function OrtWahl({ titel, ausser, onWahl, onAbbrechen }: Props) {
 
   const zeile = (id: string) => (
     <li key={id}>
-      <button className="wahl-zeile" onClick={() => onWahl(id)}>
-        <span className="wahl-typ">{TYP_LABEL[orte.get(id)!.typ]}</span>
-        <span>{pfadText(orte, id)}</span>
+      <button className="zeile zeile-zweizeilig" onClick={() => onWahl(id)}>
+        <span className="zeile-text">
+          <span className="zeile-titel">{orte.get(id)!.name}</span>
+          <span className="zeile-unter">
+            {TYP_LABEL[orte.get(id)!.typ]} · {pfadText(orte, id, ' › ')}
+          </span>
+        </span>
       </button>
     </li>
   );
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label={titel}>
-      <header className="overlay-kopf">
-        <button className="icon-btn" onClick={onAbbrechen} aria-label="Abbrechen">
-          <Icon name="x" />
-        </button>
-        <h2>{titel}</h2>
-      </header>
-      <input className="suchfeld" placeholder="Ort suchen …" value={q} onChange={(e) => setQ(e.target.value)} autoFocus />
-      <div className="overlay-inhalt">
-        {!q && zuletzt.length > 0 && (
-          <>
-            <h3 className="abschnitt">Zuletzt</h3>
-            <ul className="wahl-liste">{zuletzt.filter((id) => id !== ausser).map(zeile)}</ul>
-            <h3 className="abschnitt">Alle Orte</h3>
-          </>
-        )}
-        <ul className="wahl-liste">{liste.map(({ o }) => zeile(o.id))}</ul>
-        {!liste.length && <p className="leer">Kein Ort gefunden.</p>}
-      </div>
-    </div>
+    <Sheet titel={titel} gross onClose={onAbbrechen}>
+      <label className="suchfeld-ios">
+        <Icon name="suche" size={17} />
+        <input placeholder="Ort suchen" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Ort suchen" />
+      </label>
+      {!q && zuletzt.length > 0 && (
+        <>
+          <h3 className="gruppe-titel">Zuletzt</h3>
+          <ul className="gruppe wahl-liste">{zuletzt.filter((id) => id !== ausser).map(zeile)}</ul>
+          <h3 className="gruppe-titel">Alle Orte</h3>
+        </>
+      )}
+      {liste.length > 0 && <ul className="gruppe wahl-liste">{liste.map(({ o }) => zeile(o.id))}</ul>}
+      {!liste.length && <p className="leer">Kein Ort gefunden.</p>}
+    </Sheet>
   );
 }
